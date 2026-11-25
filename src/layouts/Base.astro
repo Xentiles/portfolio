@@ -4,14 +4,13 @@ import "@fontsource/inter/500.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "../styles/site.css";
-import { strings, type Lang } from "../i18n/strings";
+import { strings, langs, homePath, ogLocale, languages, type Lang } from "../i18n/strings";
 
-interface Props { lang: Lang; path?: string; alt?: string; title?: string; description?: string }
-// path: this page in its own language. alt: the same page in the other language.
-const { lang, path = lang === "en" ? "/" : "/sv/", alt = lang === "en" ? "/sv/" : "/", title, description } = Astro.props;
+interface Props { lang: Lang; paths?: Record<Lang, string>; title?: string; description?: string }
+// paths: this page in every language (defaults to the home pages). The own-language entry is the canonical URL.
+const { lang, paths = homePath, title, description } = Astro.props;
 const t = strings[lang];
-const other: Lang = lang === "en" ? "sv" : "en";
-const hrefFor = (l: Lang) => (l === lang ? path : alt);
+const hrefFor = (l: Lang) => paths[l];
 const site = Astro.site ?? new URL("https://dominiknagy.dev");
 const js = t.js;
 ---
@@ -23,18 +22,19 @@ const js = t.js;
     <title>{title ? `${title} · Dominik Nagy` : t.title}</title>
     <meta name="description" content={description ?? t.description} />
     <link rel="canonical" href={new URL(hrefFor(lang), site)} />
-    <link rel="alternate" hreflang="en" href={new URL(hrefFor("en"), site)} />
-    <link rel="alternate" hreflang="sv" href={new URL(hrefFor("sv"), site)} />
+    {langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(hrefFor(l), site)} />)}
     <link rel="alternate" hreflang="x-default" href={new URL(hrefFor("en"), site)} />
     <meta property="og:title" content={title ?? t.title} />
     <meta property="og:description" content={description ?? t.description} />
-    <meta property="og:locale" content={lang === "en" ? "en_GB" : "sv_SE"} />
+    <meta property="og:locale" content={ogLocale[lang]} />
+    {langs.filter((l) => l !== lang).map((l) => <meta property="og:locale:alternate" content={ogLocale[l]} />)}
     <meta property="og:type" content="website" />
     <meta property="og:url" content={new URL(hrefFor(lang), site)} />
     <meta property="og:image" content={new URL(`/img/og-${lang}.jpg`, site)} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={t.title} />
+    <meta property="og:site_name" content="Dominik Nagy" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#221E1A" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -48,11 +48,15 @@ const js = t.js;
     <canvas id="field" aria-hidden="true"></canvas>
     <div class="page">
       <header class="bar">
-        <a class="mark" href={lang === "en" ? "/" : "/sv/"} data-ink>DN<span class="mark-rest"> / Xentiles</span></a>
+        <a class="mark" href={homePath[lang]} data-ink>DN<span class="mark-rest"> / Xentiles</span></a>
         <div class="bar-end">
-          <a class="chip lang" href={hrefFor(other)} hreflang={other} lang={other} aria-label={t.otherLangLabel}><span class="long">{t.otherLang}</span><span class="short" aria-hidden="true">{t.otherLangShort}</span></a>
+          <nav class="chip langs" aria-label={t.langLabel}>
+            {langs.map((l) => (
+              <a href={hrefFor(l)} hreflang={l} lang={l} title={languages[l]} aria-label={languages[l]} aria-current={l === lang ? "page" : undefined}>{l.toUpperCase()}</a>
+            ))}
+          </nav>
           <button type="button" class="chip" id="themeToggle" aria-pressed="false"><span class="disc" aria-hidden="true"></span><span id="themeLabel">{js.paper}</span></button>
-          <button type="button" class="chip" id="pause">{js.pause}</button>
+          <button type="button" class="chip" id="pause" aria-label={js.pause}><span class="pause-icon" aria-hidden="true"></span><span id="pauseLabel">{js.pause}</span></button>
         </div>
       </header>
       <main id="main" class="stack">

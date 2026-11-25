@@ -1,0 +1,24 @@
+---
+import Base from "../../../layouts/Base.astro";
+import CaseStudy from "../../../components/CaseStudy.astro";
+import { work } from "../../../i18n/work";
+import { workSlugs } from "../../../i18n/home";
+import { langs, homePath, type Lang } from "../../../i18n/strings";
+const lang: Lang = "hu";
+type Key = "inspection" | "feedback" | "notchq";
+
+export function getStaticPaths() {
+  const lang = "hu";
+  const slug = (href: string) => href.split("/").filter(Boolean).pop()!;
+  return work[lang].map((study) => ({ params: { slug: slug(workSlugs[lang][study.key]) }, props: { key: study.key } }));
+}
+const { key } = Astro.props as { key: Key };
+const list = work[lang];
+const i = list.findIndex((s) => s.key === key);
+const study = list[i];
+const nextStudy = list[(i + 1) % list.length];
+const paths = Object.fromEntries(langs.map((l) => [l, workSlugs[l][key]])) as Record<Lang, string>;
+---
+<Base lang=hu paths={paths} title={study.title} description={study.lead}>
+  <CaseStudy lang=hu study={study} back={homePath[lang] + "#work"} next={{ title: nextStudy.title, href: workSlugs[lang][nextStudy.key] }} />
+</Base>

@@ -1,9 +1,10 @@
-// Words for the home page sections, English and Swedish side by side.
+// Words for the home page sections, English, Swedish and Hungarian side by side.
 import type { Lang } from "./strings";
 
 export const workSlugs = {
   en: { inspection: "/work/building-inspection/", feedback: "/work/feedback-intelligence/", notchq: "/work/notchq/" },
   sv: { inspection: "/sv/arbete/byggnadsinspektion/", feedback: "/sv/arbete/feedback-intelligence/", notchq: "/sv/arbete/notchq/" },
+  hu: { inspection: "/hu/munkak/epuletvizsgalat/", feedback: "/hu/munkak/feedback-intelligence/", notchq: "/hu/munkak/notchq/" },
 } as const;
 
 export const home = {
@@ -143,6 +144,75 @@ export const home = {
       eyebrow: "Kontakt",
       title: "Låt oss bygga något begripligt.",
       text: "Jag söker ett team som värdesätter nyfikenhet, tydlig kommunikation och arbete som går att granska och förbättra. Jag talar svenska, ungerska och engelska.",
+    },
+  },
+  hu: {
+    nav: { work: "Munkák", method: "Hogyan építek", research: "Kutatás", path: "Út", workshop: "Műhely", talk: "Kapcsolat" },
+    work: {
+      eyebrow: "Válogatott munkák",
+      title: "Nyitott problémáktól ellenőrizhető eredményekig.",
+      lead: "Amin most dolgozom, és két elejétől a végéig megépített projekt, leírt korlátaikkal együtt.",
+      now: {
+        kind: "Most épül · TakScan · Bizalmas pilotprojekt",
+        title: "MI-támogatott épületvizsgálat",
+        text: "A TakScan drónokkal dokumentálja az épületeket, felismeri a károkat, és helyzettel, mérettel és prioritással jelöli az eltéréseket, hogy a tulajdonosok időben léphessenek. Én azt az MI-rendszert építem, amely a szakértőket segíti a felvételek vizsgálatában, és minden következtetést egy ember hagy jóvá.",
+        principles: ["Ember a folyamatban", "Bizonyíték a feltételezés helyett", "Átláthatóság a bizonytalanságról", "Beépített adatvédelem", "Kevesebbet építeni, többet újrahasznosítani"],
+        cta: "Hogyan dolgozom rajta",
+      },
+      cards: [
+        { key: "feedback", kind: "Kiemelt · v0.2.0", title: "Feedback Intelligence", text: "Helyi munkafelület, amely értékeléseket és hozzászólásokat importál, kulcsszavas szabályokkal vagy csatlakoztatott MI-vel osztályozza őket, és minden döntést visszavezethetővé tesz a bizonyítékáig.", proof: "Egy 10 000 rekordos futás túlélte a feldolgozó újraindítását, és minden export megvolt.", cta: "Esettanulmány" },
+        { key: "notchq", kind: "Natív macOS · Béta", title: "NotchQ", text: "Swift és AppKit segédprogram, amely a Mac kameranyílása mellett mutatja a hátralévő Codex- és Claude-keretet, a visszaállás idejével és azzal, mennyire friss minden adat.", proof: "Aláírt alkalmazáson belüli frissítések, helyreállás alvás után, fixture-tesztek.", cta: "Esettanulmány" },
+      ],
+    },
+    method: {
+      eyebrow: "Hogyan építek",
+      title: "Keretek, terv, interfészek és tesztek, építés, ellenőrzés.",
+      lead: "Codexet, Claude-ot és helyi modelleket használok a felfedezéshez és a munka gyorsításához. Közben végig benne maradok: én irányítom a feladatokat, elolvasok minden változtatást, kijavítom a hibákat, és én felelek a döntésekért. A generált kód addig vázlat, amíg a tesztek és én egyet nem értünk.",
+      steps: [
+        ["Keretek", "Megérteni a problémát, és azt, hogyan néz ki a helyes eredmény."],
+        ["Terv", "Részekre bontani és felvázolni a képernyőket."],
+        ["Interfészek és tesztek", "A szerződésekben a kód előtt megállapodni."],
+        ["Építés", "Kis, átnézhető lépésekben megvalósítani."],
+        ["Ellenőrzés", "Tesztelni a hibás ágakat, és leírni a korlátokat."],
+      ],
+    },
+    research: {
+      eyebrow: "Kutatás",
+      title: "Context-Based Image Learning",
+      text: "Alapszakos szakdolgozatom, társszerzővel írva, a Halmstadi Egyetem kiadásában. Egy visszakövethető gépi látási folyamatot építettünk, amely vizuális fogalmak könyvtárát tanulja meg, és újra felhasználja őket.",
+      stats: [["79 721", "kiértékelt megfigyelés"], ["95,54%", "arányban egy meglévő leírót használt újra"]],
+      grade: "Érdemjegy: 5 az 5-ből.",
+      link: ["A szakdolgozat a DiVA-ban", "https://urn.kb.se/resolve?urn=urn:nbn:se:hh:diva-59395"],
+      tools: "PyTorch · bináris autoencoder · SQLite · Hamming-távolság alapú egyeztetés",
+    },
+    path: {
+      eyebrow: "Út",
+      title: "Hogyan jutottam ide.",
+      lead: "Hardverrel és hálózatokkal kezdtem, megtanultam tanítani, alkalmazott MI-t tanultam, és közben olyan munkám volt, ahol mindennek időben működnie kell.",
+      items: [
+        ["Most", "TakScan", "MI drónos épületvizsgálathoz, Alex Weibull-lal"],
+        ["2025–2026", "Gaddr, MI-nagykövet", "Munkafolyamat- és ágensprototípusokat építettem, és csapatokat tanítottam a generatív MI felelős használatára"],
+        ["2025", "HighFive Innovationsarena", "Sprintalapú adatbányászati projekt, az adattisztítástól az ajánlásokig"],
+        ["2023–2026", "Halmstadi Egyetem", "Adattudomány, alkalmazott MI: gépi tanulás, mélytanulás, elosztott MI, adatbázisok"],
+        ["2024–2026", "Hotel Tylösand", "Nyáron logisztika, egész évben bankettszolgálat. Aminek időben működnie kell"],
+        ["2023", "Gothia Cup és Partille Cup", "Élő kamerafeedek üzemben tartása a torna pályáin"],
+        ["2022–2024", "Fryshuset", "Fiataloknak tanítottam kreatív kódolást és MI-alapú képeszközöket"],
+        ["2020–2023", "Thoren Innovation School", "Informatika szak: programozás, web, 3D játékok, hardver, hálózatok"],
+      ],
+    },
+    workshop: {
+      eyebrow: "Műhely",
+      title: "Amit kíváncsiságból építek.",
+      items: [
+        ["OSFR", "Renderelési kutatás Unityben: shaderötletek tesztelése mérésekkel."],
+        ["Mining Turtle", "Lua-automatizálás egy Minecraft-robothoz, útvonaltervezéssel és távoli állapotjelzéssel."],
+        ["Orbital Clarity", "A saját designstílusom egy csomagba gyűjtve: az elvek, a tinta, a pálya és a mozgás ezen az oldalon. A betűtípus a Libron, Nico Verbruggen munkája."],
+      ],
+    },
+    talk: {
+      eyebrow: "Kapcsolat",
+      title: "Építsünk valami érthetőt.",
+      text: "Olyan csapatot keresek, amely értékeli a kíváncsiságot, a világos kommunikációt és az ellenőrizhető, továbbfejleszthető munkát. Svédül, magyarul és angolul beszélek.",
     },
   },
 } satisfies Record<Lang, unknown>;

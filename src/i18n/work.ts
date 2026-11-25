@@ -204,8 +204,100 @@ const sv: CaseStudy[] = [
   },
 ];
 
-export const work: Record<Lang, CaseStudy[]> = { en, sv };
+const hu: CaseStudy[] = [
+  {
+    key: "inspection",
+    kind: "Most épül · TakScan · Bizalmas pilotprojekt",
+    title: "MI-támogatott épületvizsgálat",
+    lead: "A TakScan drónokkal dokumentálja az épületeket, felismeri a károkat, és helyzettel, mérettel és prioritással jelöli az eltéréseket, hogy a tulajdonosok időben léphessenek, és megelőzzék a nagyobb bajt. Én azt az MI-rendszert építem, amely a légi felvételeket vizsgáló szakértőket támogatja. Az MI segít, a szakértő dönt.",
+    notice: "Ez egy bizalmas pilotprojekt. Az alábbiak azt írják le, hogyan dolgozom rajta, nem azt, hogy mi épül. Személyesen, amennyire a titoktartás engedi, többet is elmondok.",
+    sections: [
+      { title: "A projekt", blocks: [{ type: "p", text: "A munka a teljes láncot lefedi, az érzékeny felvételek felelős kezelésétől a szakértők által naponta használt szoftverig, és most egy strukturált ellenőrzési szakaszba lép. Alex Weibull-lal együtt építem a TakScannél (Riventify AB)." }] },
+      { title: "Öt alapelv", blocks: [{ type: "cards", items: [
+        ["Ember a folyamatban", "Az MI segít, a szakértő dönt. Amit a rendszer javasol, az addig nem számít, amíg egy ember jóvá nem hagyta."],
+        ["Bizonyíték a feltételezés helyett", "Az eszközöket és módszereket az alternatívák egymás melletti tesztelésével választom, nem hírnév vagy divat alapján."],
+        ["Átláthatóság a bizonytalanságról", "A rendszer megmutatja, mennyire biztos, ahelyett hogy egyetlen válasz mögé rejtené a kételyt."],
+        ["Beépített adatvédelem", "Az érzékeny felvételek és ügyféladatok ellenőrzött, helyi környezetben maradnak, és sosem kerülnek a kód mellé."],
+        ["Kevesebbet építeni, többet újrahasznosítani", "A bevált nyílt forrású elemek előbb jönnek, mint az egyedi infrastruktúra, így az energia arra megy, ami valóban új."],
+      ] }] },
+      { title: "Hogyan szervezem a munkát", blocks: [{ type: "list", items: [
+        "Minden nagyobb változás egy leírt, dátumozott tervvel kezdődik: a cél, a lehetőségek, a kockázatok, és hogy mit érint. Amíg a tervet nem hagyják jóvá, semmi sem változik.",
+        "A rendszer jól elhatárolt részekre oszlik, világos szabályokkal arról, mi hova tartozik, így minden rész önállóan tesztelhető és cserélhető.",
+        "Semmi sem törlődik véglegesen. A kivezetett munka archívumba kerül, minden eltávolítás naplózva van, és bármelyik korábbi állapot visszaállítható.",
+        "A dokumentáció is eredmény: útmutatók, gyorsindítók, átadási jegyzetek és döntési feljegyzések, hogy bárki ott folytathassa, ahol a munka megállt.",
+        "Ha a munka szünetel, előbb leírom az ellenőrzött állapotot és a következő lépéseket.",
+        "A döntéseket az indoklásukkal együtt rögzítem, így a későbbi változtatások tudatosak, nem véletlenek.",
+        "Ami pénzbe kerül, közös erőforrást érint vagy nem visszafordítható, ahhoz kifejezett jóváhagyás kell.",
+      ] }] },
+      { title: "Okos költés", blocks: [{ type: "list", items: [
+        "A fizetős szolgáltatások keretet jelentenek, és csak ott használom őket, ahol valódi különbséget hoznak. Minden más helyben fut.",
+        "Amiért fizettünk, azt nem dobjuk ki. Az eredményeket megőrizzük és újrahasznosíthatóvá tesszük.",
+        "A napi munka elfut egy laptopon is; a nehéz feladatok erősebb gépre költözhetnek, de nem függnek tőle.",
+        "Minden összehasonlítás a pontosság mellett az időt és a költséget is mérlegeli, így a kompromisszumok láthatók.",
+      ] }] },
+      { title: "Minőségi elvárások", blocks: [{ type: "list", items: [
+        "Minden eredmény visszavezethető a szoftver, a szabályok és az adatok pontos verziójára, amelyek előállították.",
+        "A kód, a definíciók, a szabályok és az átnézett rekordok mind verziózottak, és a korábbi verziók megmaradnak.",
+        "A gépi javaslatok és az ember által megerősített tények sosem keverednek.",
+        "Automatizált tesztek fedik az adatokat és rekordokat kezelő részeket, ahol a hibákat később a legnehezebb megtalálni.",
+        "A fontos rekordokról minden írás előtt mentés készül, a beérkező anyagot pedig érkezéskor ellenőrizzük és naplózzuk.",
+        "A külső elemeknél bevezetés előtt ellenőrzöm, hogy a licencük megengedi-e a kereskedelmi felhasználást.",
+        "Kérem, hogy a saját ötleteimet is megkérdőjelezzék, és irányt váltok, ha a bizonyítékok ezt mutatják.",
+      ] }] },
+      { title: "MI-ágensek irányítása csapatként", blocks: [{ type: "p", text: "Az MI-alapú kódoló ágenseket fejlesztőcsapatként irányítom, állandó szabályokkal az adatvédelemről, a törlésekről, a jóváhagyásokról és a dokumentációról. Így egyetlen ember is vihet egy ekkora projektet, miközben minden döntés a kezében marad." }] },
+    ],
+    limits: { title: "Ami bizalmas marad", text: "A műszaki terv, az adatok, a módszerek és az eredmények. Ez az oldal csak a munkamódszert írja le." },
+    closing: "Ugyanezek a szabályok építették az oldalt, amit most olvasol: indoklással leírt döntések, újrahasznosítás az újrafeltalálás előtt, és őszinteség arról, ami még nincs bizonyítva.",
+  },
+  {
+    key: "feedback",
+    kind: "Kiemelt · v0.2.0",
+    title: "Feedback Intelligence",
+    lead: "Az ügyfélvisszajelzések gyorsabban gyűlnek az értékelésekben és hozzászólásokban, mint ahogy egy csapat el tudja olvasni őket, egy MI-összefoglalóban pedig nehéz megbízni, ha nem látod, miért mondja, amit mond. A Feedback Intelligence osztályozza a visszajelzéseket, és minden döntést visszavezethetővé tesz a bizonyítékáig.",
+    sections: [
+      { title: "Amit építettem", blocks: [{ type: "list", items: [
+        "Helyi munkafelület, amely értékeléseket és hozzászólásokat importál.",
+        "Osztályozás kulcsszavas szabályokkal vagy csatlakoztatott MI-modellel, futásonként választva.",
+        "Minden döntés az eredetével együtt tárolódik, így bármelyik eredmény visszakövethető a szövegig, amely kiváltotta.",
+      ] }, { type: "figure", src: "/img/fi/fi-overview.webp", alt: "A Feedback Intelligence áttekintő nézete az Orbital Clarity Szén témájában: választó egy helyi nyílt modell, egy szabályalapú alapvonal és egy MI-referencia között, az aktuális adatkészlet és verzió, valamint szűrők.", caption: "Az áttekintés. Válaszd ki, melyik módszer döntéseit nézed, aztán szűrj. Szintetikus bemutatóadatok." }] },
+      { title: "Hogyan működik", blocks: [{ type: "flow", items: ["Import", "Szabályok vagy MI", "Döntések eredettel", "Elemzés", "Áttekintő felület"] }, { type: "figure", src: "/img/fi/fi-signal.webp", alt: "Jelzésoldal, ahol a késedelmes szállítások aránya időben narancssárga vonalként látszik egy szaggatott átlag mellett, fölötte a legutóbbi érték, az átlag és a tartomány.", caption: "Egy jelzés időben. Minden pont megnyitja a mögötte álló rekordokat." }] },
+      { title: "Amit eldöntöttem, és miért", blocks: [{ type: "list", items: [
+        "Tartós feladatok és kimenő sor (outbox), hogy egy újraindítás se veszítsen el munkát, és egy export se menjen ki kétszer.",
+        "Hozzájárulás minden külső MI-hívás előtt, hogy egyetlen visszajelzés se hagyja el a gépet világos döntés nélkül.",
+      ] }] },
+      { title: "Bizonyíték", blocks: [{ type: "p", text: "Egy 10 000 rekordos futás túlélte a feldolgozó újraindítását, és minden export megvolt. A kiadási áttekintés, a tesztek és a bemutató a repóban vannak." }, { type: "figure", src: "/img/fi/fi-evaluation.webp", alt: "Kiértékelő táblázat, amely egy helyi nyílt modellt, egy általános nyelvi modellt és egy szabályalapú alapvonalat hasonlít össze futási állapot, sikeres rekordok, hibák, témapontosság és makro-F1 szerint, MI-referenciaként jelölve, nem emberi etalonként.", caption: "A modellek összehasonlítása, őszintén címkézve: MI-referenciához mérve, nem emberi címkékhez." }] },
+    ],
+    links: [["Repó a GitHubon", "https://github.com/Xentiles/feedback-intelligence"]],
+    limits: { title: "Amit ez még nem bizonyít", text: "Az MI pontosságát valódi ügyféladatokon. Az eddigi tesztek szintetikus adatokat használnak, és mért üzleti hatás még nincs." },
+  },
+  {
+    key: "notchq",
+    kind: "Natív macOS · Béta",
+    title: "NotchQ",
+    lead: "Ha MI-alapú kódolóeszközökkel dolgozol, és egy feladat közepén elfogy a keret, az megtöri a lendületet, és ha meg akarod nézni, mennyi maradt, ki kell lépned abból, amit csinálsz. A NotchQ szem előtt tartja.",
+    sections: [
+      { title: "Amit építettem", blocks: [{ type: "list", items: [
+        "Natív Swift és AppKit segédprogram, amely a Mac kameranyílása mellett ül.",
+        "A hátralévő Codex- és Claude-keret, és hogy mikor áll vissza.",
+        "Mennyire friss minden adat, hogy sose egy elavult szám alapján dönts.",
+      ] }] },
+      { title: "Hogyan működik", blocks: [{ type: "flow", items: ["Használat beolvasása", "Visszaállások követése", "Frissesség jelzése", "Kijelzés a nyílás mellett"] }] },
+      { title: "Amit eldöntöttem, és miért", blocks: [{ type: "list", items: [
+        "Natív alkalmazás webes csomagoló helyett, hogy a kameranyílás mellett élhessen és könnyű maradjon.",
+        "Aláírt, alkalmazáson belüli frissítések, hogy a bétatesztelők újratelepítés nélkül kapják meg a javításokat.",
+        "Helyreállás alvás és ébredés után, mert egy laptopos segédprogram az élete felét alvó gépen tölti.",
+      ] }] },
+      { title: "Bizonyíték", blocks: [{ type: "p", text: "Aláírt alkalmazáson belüli frissítések, helyreállás alvás és ébredés után, és fixture-tesztek a feldolgozáshoz." }] },
+    ],
+    links: [["Repó a GitHubon", "https://github.com/Xentiles/NotchQ"]],
+    media: { mp4: "/media/notchq-demo.mp4", webm: "/media/notchq-demo.webm", poster: "/media/notchq-poster.jpg", alt: "A NotchQ egy MacBookon: két kis százalékérték a kameranyílás mellett a Codexhez és a Claude Code-hoz, egy menü a visszaállási időkkel és a beállítások ablaka.", caption: "A NotchQ bemutatóklipje. Az értékek illusztratívak." },
+    limits: { title: "Amit ez még nem bizonyít", text: "A működést Intel-alapú Maceken és régebbi macOS-verziókon, ezeket még nem ellenőriztem." },
+  },
+];
+
+export const work: Record<Lang, CaseStudy[]> = { en, sv, hu };
 export const workUi = {
   en: { back: "Back to all work", next: "Next project", label: "Case study" },
   sv: { back: "Tillbaka till alla projekt", next: "Nästa projekt", label: "Fallstudie" },
+  hu: { back: "Vissza az összes munkához", next: "Következő projekt", label: "Esettanulmány" },
 } as const;

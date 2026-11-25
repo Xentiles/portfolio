@@ -1,11 +1,12 @@
 ---
 import Base from "../layouts/Base.astro";
 ---
-<Base lang="en" path="/404.html" alt="/sv/" title="Page not found" description="This page doesn't exist.">
+<Base lang="en" paths={{ en: "/404.html", sv: "/sv/", hu: "/hu/" }} title="Page not found" description="This page doesn't exist.">
   <section class="sec talk">
     <p class="eyebrow" data-ink>404</p>
     <h1 class="nf" data-ink>This page drifted out of orbit.</h1>
     <p class="lead" data-ink>The link may be old or mistyped. <a href="/">Go to the home page</a>.</p>
     <p class="lead" lang="sv" data-ink>Sidan finns inte. <a href="/sv/">Till startsidan på svenska</a>.</p>
+    <p class="lead" lang="hu" data-ink>Ez az oldal nem létezik. <a href="/hu/">Tovább a magyar főoldalra</a>.</p>
   </section>
 </Base>

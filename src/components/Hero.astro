@@ -6,7 +6,7 @@ const t = strings[Astro.props.lang];
 <section class="hero" aria-labelledby="name">
   <canvas id="orbit" aria-hidden="true"></canvas>
   <div class="hero-text">
-    <h1 id="name" data-ink>Dominik Nagy</h1>
+    <h1 id="name" data-ink>{t.name}</h1>
     <p class="role" data-ink>{t.role}</p>
     <p class="thesis" data-ink>{t.thesis}</p>
     <p class="now" data-ink><span class="pulse" aria-hidden="true"></span><span>{t.now}</span></p>

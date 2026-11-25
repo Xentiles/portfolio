@@ -3,21 +3,22 @@ import Base from "../../layouts/Base.astro";
 import CaseStudy from "../../components/CaseStudy.astro";
 import { work } from "../../i18n/work";
 import { workSlugs } from "../../i18n/home";
-const lang = "en";
-const other = lang === "en" ? "sv" : "en";
+import { langs, homePath, type Lang } from "../../i18n/strings";
+const lang: Lang = "en";
+type Key = "inspection" | "feedback" | "notchq";
 
 export function getStaticPaths() {
   const lang = "en";
   const slug = (href: string) => href.split("/").filter(Boolean).pop()!;
   return work[lang].map((study) => ({ params: { slug: slug(workSlugs[lang][study.key]) }, props: { key: study.key } }));
 }
-const { key } = Astro.props as { key: "inspection" | "feedback" | "notchq" };
+const { key } = Astro.props as { key: Key };
 const list = work[lang];
 const i = list.findIndex((s) => s.key === key);
 const study = list[i];
 const nextStudy = list[(i + 1) % list.length];
-const back = (lang === "en" ? "/" : "/sv/") + "#work";
+const paths = Object.fromEntries(langs.map((l) => [l, workSlugs[l][key]])) as Record<Lang, string>;
 ---
-<Base lang={lang} path={workSlugs[lang][key]} alt={workSlugs[other][key]} title={study.title} description={study.lead}>
-  <CaseStudy lang={lang} study={study} back={back} next={{ title: nextStudy.title, href: workSlugs[lang][nextStudy.key] }} />
+<Base lang=en paths={paths} title={study.title} description={study.lead}>
+  <CaseStudy lang=en study={study} back={homePath[lang] + "#work"} next={{ title: nextStudy.title, href: workSlugs[lang][nextStudy.key] }} />
 </Base>

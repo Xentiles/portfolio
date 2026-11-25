@@ -192,6 +192,12 @@ footer { font: 400 12px/18px var(--font-mono); letter-spacing: 0.04em; max-width
 
 @media (prefers-reduced-motion: reduce) { .now .pulse { animation: none; } }
 .chip.lang { text-decoration: none; }
+/* Language switch: one pill, three codes. The current language is lit with the accent underline. */
+.chip.langs { gap: 2px; padding: 3px; cursor: default; }
+.chip.langs:hover { transform: none; }
+.chip.langs a { display: inline-flex; align-items: center; min-height: 28px; padding: 0 9px; border-radius: 999px; color: var(--ink); text-decoration: none; font: 500 12px/18px var(--font-ui); letter-spacing: .04em; opacity: .7; transition: opacity 200ms ease, background-color 200ms ease; }
+.chip.langs a:hover { opacity: 1; background: var(--ink-wash); }
+.chip.langs a[aria-current="page"] { opacity: 1; background: var(--ink-wash); text-decoration: underline 2px var(--accent); text-underline-offset: 5px; }
 .hub-wrap { display: grid; gap: 12px; }
 .open { margin: 0; font: 400 13px/20px var(--font-ui); opacity: .82; }
 .site-foot { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--ink-soft); padding-top: 16px; max-width: none; }
@@ -202,9 +208,13 @@ footer { font: 400 12px/18px var(--font-mono); letter-spacing: 0.04em; max-width
 .stack { display: grid; gap: 64px; }
 @media (max-width: 720px) { .stack { gap: 48px; } }
 .chip.lang .short { display: none; }
+/* Pause: two bars while moving, a play triangle while paused. Shown alone on narrow screens. */
+.pause-icon { display: none; width: 10px; height: 12px; border-left: 3px solid currentColor; border-right: 3px solid currentColor; }
+#pause[data-paused="true"] .pause-icon { width: 0; height: 0; border-left: 10px solid currentColor; border-right: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
 @media (max-width: 520px) {
   .chip.lang .long { display: none; } .chip.lang .short { display: inline; }
-  .bar { flex-wrap: nowrap; } .bar-end { gap: 8px; flex-wrap: nowrap; } .bar .chip { padding: 6px 10px; }
+  #themeLabel, #pauseLabel { display: none; } .pause-icon { display: block; } #themeToggle, #pause { min-width: 36px; justify-content: center; }
+  .bar { flex-wrap: nowrap; } .bar-end { gap: 8px; flex-wrap: nowrap; } .bar .chip { padding: 6px 10px; } .bar .chip.langs { padding: 3px; } .chip.langs a { padding: 0 8px; }
   .mark { font-size: 12px; letter-spacing: .06em; white-space: nowrap; }
 }
 .now { align-items: flex-start; }

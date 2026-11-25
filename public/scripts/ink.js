@@ -605,7 +605,10 @@ void main(){
     toggle.setAttribute("aria-pressed", String(paper));
     toggle.setAttribute("aria-label", paper ? L.toCharcoal : L.toPaper);
     themeLabel.textContent = paper ? L.charcoal : L.paper;
-    pauseBtn.textContent = paused ? L.resume : L.pause;
+    const pauseText = paused ? L.resume : L.pause;
+    (document.getElementById("pauseLabel") || pauseBtn).textContent = pauseText;
+    pauseBtn.setAttribute("aria-label", pauseText);
+    pauseBtn.dataset.paused = String(paused);
     // Clips follow the same pause switch as the ink, and stay still for people who prefer reduced motion.
     document.querySelectorAll("video[data-loop]").forEach(v => { if (paused) v.pause(); else v.play().catch(() => {}); });
   }
