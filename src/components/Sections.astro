@@ -1,0 +1,106 @@
+---
+import { home, workSlugs } from "../i18n/home";
+import { strings, type Lang } from "../i18n/strings";
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const h = home[lang];
+const t = strings[lang];
+const slugs = workSlugs[lang];
+---
+<section class="sec" id="work" aria-labelledby="work-h">
+  <header class="sec-head">
+    <p class="eyebrow" data-ink>{h.work.eyebrow}</p>
+    <h2 id="work-h" data-ink>{h.work.title}</h2>
+    <p class="lead" data-ink>{h.work.lead}</p>
+  </header>
+  <a class="card now-card tex" href={slugs.inspection} data-ink>
+    <span class="kind">{h.work.now.kind}</span>
+    <h3 style="view-transition-name: wt-inspection">{h.work.now.title}</h3>
+    <p>{h.work.now.text}</p>
+    <ul class="principles" aria-label="Principles">
+      {h.work.now.principles.map((p) => <li>{p}</li>)}
+    </ul>
+    <span class="more">{h.work.now.cta}</span>
+  </a>
+  <div class="cards">
+    {h.work.cards.map((c) => (
+      <a class="card tex" href={slugs[c.key as "feedback" | "notchq"]} data-ink>
+        <span class="kind">{c.kind}</span>
+        <h3 style={`view-transition-name: wt-${c.key}`}>{c.title}</h3>
+        <p>{c.text}</p>
+        <p class="proof">{c.proof}</p>
+        <span class="more">{c.cta}</span>
+      </a>
+    ))}
+  </div>
+</section>
+
+<section class="sec" id="method" aria-labelledby="method-h">
+  <header class="sec-head">
+    <p class="eyebrow" data-ink>{h.method.eyebrow}</p>
+    <h2 id="method-h" data-ink>{h.method.title}</h2>
+    <p class="lead" data-ink>{h.method.lead}</p>
+  </header>
+  <div class="method-wrap">
+  <span class="method-track" aria-hidden="true"><span class="method-dot"></span></span>
+  <ol class="method">
+    {h.method.steps.map(([name, line]) => (
+      <li class="stop" data-ink><span class="stop-mark" aria-hidden="true"></span><strong>{name}</strong><span>{line}</span></li>
+    ))}
+  </ol>
+  </div>
+</section>
+
+<section class="sec" id="research" aria-labelledby="research-h">
+  <div class="research tex">
+    <div class="research-text">
+      <p class="eyebrow" data-ink>{h.research.eyebrow}</p>
+      <h2 id="research-h" data-ink>{h.research.title}</h2>
+      <p data-ink>{h.research.text}</p>
+      <p class="tools" data-ink>{h.research.tools}</p>
+    </div>
+    <dl class="stats">
+      {h.research.stats.map(([n, l]) => (<div data-ink><dt>{n}</dt><dd>{l}</dd></div>))}
+      <div data-ink><dt class="grade">5/5</dt><dd>{h.research.grade}</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="sec" id="path" aria-labelledby="path-h">
+  <header class="sec-head">
+    <p class="eyebrow" data-ink>{h.path.eyebrow}</p>
+    <h2 id="path-h" data-ink>{h.path.title}</h2>
+    <p class="lead" data-ink>{h.path.lead}</p>
+  </header>
+  <div class="timeline-wrap">
+  <span class="timeline-line" aria-hidden="true"></span>
+  <ol class="timeline">
+    {h.path.items.map(([when, where, line]) => (
+      <li data-ink><span class="tl-mark" aria-hidden="true"></span><span class="tl-when">{when}</span><strong>{where}</strong><span class="tl-line">{line}</span></li>
+    ))}
+  </ol>
+  </div>
+</section>
+
+<section class="sec" id="workshop" aria-labelledby="workshop-h">
+  <header class="sec-head">
+    <p class="eyebrow" data-ink>{h.workshop.eyebrow}</p>
+    <h2 id="workshop-h" data-ink>{h.workshop.title}</h2>
+  </header>
+  <ul class="tiles">
+    {h.workshop.items.map(([name, line]) => (<li class="tile tex" data-ink><strong>{name}</strong><span>{line}</span></li>))}
+  </ul>
+</section>
+
+<section class="sec talk" id="contact" aria-labelledby="talk-h">
+  <p class="eyebrow" data-ink>{h.talk.eyebrow}</p>
+  <h2 id="talk-h" data-ink>{h.talk.title}</h2>
+  <p class="lead" data-ink>{h.talk.text}</p>
+  <nav class="hub hub-3" aria-label={t.hubLabel}>
+    <button class="tex" type="button" data-contact data-ink>
+      <span class="fill"></span><span class="label">{t.contact}</span><span class="meta">{t.copyEmail}</span><span class="mini-orbit" aria-hidden="true"><span class="mini-dot"></span></span>
+    </button>
+    <a class="tex" href="https://www.linkedin.com/in/dominik-nagy-841002144/" target="_blank" rel="noopener me" data-ink><span class="fill"></span><span class="label">LinkedIn</span><span class="meta">Dominik Nagy</span><span class="arrow" aria-hidden="true">↗</span></a>
+    <a class="tex" href="https://github.com/Xentiles" target="_blank" rel="noopener me" data-ink><span class="fill"></span><span class="label">GitHub</span><span class="meta">@Xentiles</span><span class="arrow" aria-hidden="true">↗</span></a>
+  </nav>
+</section>

@@ -1,0 +1,17 @@
+---
+import { strings, type Lang } from "../i18n/strings";
+interface Props { lang: Lang }
+const t = strings[Astro.props.lang];
+---
+<section class="hero" aria-labelledby="name">
+  <canvas id="orbit" aria-hidden="true"></canvas>
+  <div class="hero-text">
+    <h1 id="name" data-ink>Dominik Nagy</h1>
+    <p class="role" data-ink>{t.role}</p>
+    <p class="thesis" data-ink>{t.thesis}</p>
+    <p class="now" data-ink><span class="pulse" aria-hidden="true"></span><span>{t.now}</span></p>
+  </div>
+  <figure class="portrait" id="portrait" role="img" aria-label={t.portraitAlt}>
+    <img id="pfpImg" alt="" src="/img/portrait.webp" width="640" height="960" decoding="async" />
+  </figure>
+</section>

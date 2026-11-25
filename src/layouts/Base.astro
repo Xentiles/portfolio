@@ -1,0 +1,71 @@
+---
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
+import "../styles/site.css";
+import { strings, type Lang } from "../i18n/strings";
+
+interface Props { lang: Lang; path?: string; alt?: string; title?: string; description?: string }
+// path: this page in its own language. alt: the same page in the other language.
+const { lang, path = lang === "en" ? "/" : "/sv/", alt = lang === "en" ? "/sv/" : "/", title, description } = Astro.props;
+const t = strings[lang];
+const other: Lang = lang === "en" ? "sv" : "en";
+const hrefFor = (l: Lang) => (l === lang ? path : alt);
+const site = Astro.site ?? new URL("https://dominiknagy.dev");
+const js = t.js;
+---
+<!doctype html>
+<html lang={lang} data-mode="charcoal">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title ? `${title} · Dominik Nagy` : t.title}</title>
+    <meta name="description" content={description ?? t.description} />
+    <link rel="canonical" href={new URL(hrefFor(lang), site)} />
+    <link rel="alternate" hreflang="en" href={new URL(hrefFor("en"), site)} />
+    <link rel="alternate" hreflang="sv" href={new URL(hrefFor("sv"), site)} />
+    <link rel="alternate" hreflang="x-default" href={new URL(hrefFor("en"), site)} />
+    <meta property="og:title" content={title ?? t.title} />
+    <meta property="og:description" content={description ?? t.description} />
+    <meta property="og:locale" content={lang === "en" ? "en_GB" : "sv_SE"} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={new URL(hrefFor(lang), site)} />
+    <meta property="og:image" content={new URL(`/img/og-${lang}.jpg`, site)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={t.title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#221E1A" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/libron/Libron-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/libron/Libron-Bold.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Apply the saved theme before first paint, so Paper visitors never see a Charcoal flash. -->
+    <script is:inline>try{var s=JSON.parse(localStorage.getItem("dn-site")||"{}");if(s.mode==="paper")document.documentElement.dataset.mode="paper";}catch(e){}</script>
+  </head>
+  <body>
+    <a class="skip" href="#main">{t.skip}</a>
+    <canvas id="field" aria-hidden="true"></canvas>
+    <div class="page">
+      <header class="bar">
+        <a class="mark" href={lang === "en" ? "/" : "/sv/"} data-ink>DN<span class="mark-rest"> / Xentiles</span></a>
+        <div class="bar-end">
+          <a class="chip lang" href={hrefFor(other)} hreflang={other} lang={other} aria-label={t.otherLangLabel}><span class="long">{t.otherLang}</span><span class="short" aria-hidden="true">{t.otherLangShort}</span></a>
+          <button type="button" class="chip" id="themeToggle" aria-pressed="false"><span class="disc" aria-hidden="true"></span><span id="themeLabel">{js.paper}</span></button>
+          <button type="button" class="chip" id="pause">{js.pause}</button>
+        </div>
+      </header>
+      <main id="main" class="stack">
+        <slot />
+      </main>
+      <footer class="site-foot" data-ink>
+        <span>© 2026 Dominik Nagy</span>
+        <span>{t.built} · <a href="https://github.com/nicoverbruggen/libron" target="_blank" rel="noopener">{t.typeCredit}</a></span>
+        <p class="field-note" id="fieldNote" hidden></p>
+      </footer>
+    </div>
+    <script is:inline>addEventListener("error",function(e){var n=document.getElementById("fieldNote");if(n&&!n.dataset.err){n.dataset.err="1";n.hidden=false;n.textContent="Script error: "+String(e.message).slice(0,240);}});</script>
+    <script is:inline define:vars={{ js }}>window.__ink_i18n = js;</script>
+    <script is:inline src="/scripts/ink.js"></script>
+  </body>
+</html>

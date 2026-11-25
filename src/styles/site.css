@@ -1,0 +1,375 @@
+/* Libron by Nico Verbruggen, SIL Open Font License 1.1, Reserved Font Name "Libron". github.com/nicoverbruggen/libron
+   Official files, unmodified. Licence: /fonts/libron/OFL.txt */
+@font-face { font-family: "Libron"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/libron/Libron-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Libron"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/libron/Libron-Bold.woff2") format("woff2"); }
+@font-face { font-family: "Libron"; font-style: italic; font-weight: 400; font-display: swap; src: url("/fonts/libron/Libron-Italic.woff2") format("woff2"); }
+
+/* Layout: one reading column over a living field of ink capsules; link hub first, the story in a panel that drains and blooms.
+   Study 03: Charcoal (default, dark) and Paper (light) are the two themes; Libron for reading and display. */
+:root {
+  color-scheme: dark;
+  /* Material primitives */
+  --charcoal: #221E1A;
+  --charcoal-raised: #2C2723;
+  --walnut: #3A2E25;
+  --paper: #EFE8DC;
+  --paper-shade: #E8E1D5;
+  --birch: #F3EEE6;
+  --leaf: #E86823;
+  --leaf-deep: #B8501A;
+
+  /* Roles: Charcoal look (default) */
+  --page: var(--charcoal);
+  --surface: var(--charcoal-raised);
+  --wood: var(--walnut);
+  --ink: var(--paper);
+  --ink-soft: rgba(239, 232, 220, 0.16);
+  --ink-wash: rgba(239, 232, 220, 0.10);
+  --on-ink: var(--charcoal-raised);
+  --accent: var(--leaf);
+  --tex-opacity: 0.07;
+
+  --font-display: "Libron", Georgia, serif;
+  --font-body: "Libron", Georgia, serif;
+  --cell: 7.5;
+  --font-ui: "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --spring: cubic-bezier(.2, 1.3, .4, 1);
+}
+:root[data-mode="paper"] {
+  color-scheme: light;
+  --page: var(--paper-shade);
+  --surface: var(--birch);
+  --wood: #DCCDB8;
+  --ink: #2B2622;
+  --ink-soft: rgba(43, 38, 34, 0.18);
+  --ink-wash: rgba(90, 62, 43, 0.10);
+  --on-ink: var(--birch);
+  --accent: var(--leaf-deep);
+  --tex-opacity: 0.10;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--page); overflow-x: clip; }
+body { overflow-x: clip; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 400 16px/1.6 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  transition: background-color 600ms ease, color 600ms ease;
+}
+#field { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; display: block; }
+.no-gl #field { display: none; }
+/* If the ink field cannot run, a still capsule pattern keeps the page in character. */
+.no-gl body { background-image: radial-gradient(circle, var(--ink-wash) 0 2.4px, transparent 2.9px); background-size: 7.5px 7.5px; }
+.field-note { font: 400 12px/18px var(--font-mono); color: var(--accent); margin: 8px 0 0; }
+
+/* Paper fibre texture, generated at load, laid over solid surfaces only. */
+.tex { position: relative; isolation: isolate; }
+.tex::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+  background-image: var(--paper-tex, none); background-size: 256px 256px; opacity: var(--tex-opacity);
+  mix-blend-mode: soft-light;
+}
+:root[data-mode="paper"] .tex::after { mix-blend-mode: multiply; }
+
+.page { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; padding-block: 24px 120px; display: grid; gap: 64px; }
+
+.bar { position: sticky; top: 0; z-index: 20; padding-block: 12px; margin-block: -12px; isolation: isolate; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+/* The control bar stays on screen. A frosted band of page colour sits behind it, fading out at
+   its lower edge, so content and ink slide softly underneath instead of colliding with the chips. */
+.bar::before { content: ""; position: absolute; z-index: -1; top: 0; bottom: -16px; left: 50%; width: 100vw; transform: translateX(-50%); pointer-events: none;
+  background: color-mix(in srgb, var(--page) 86%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 24px), transparent); mask-image: linear-gradient(#000 calc(100% - 24px), transparent);
+  opacity: 0; transition: opacity 400ms ease; }
+.bar.stuck::before { opacity: 1; }
+@media (max-width: 720px) { .bar .index { display: none; } }
+.mark { font: 500 13px/20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.index { font: 400 12px/18px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.bar-end { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.chip { appearance: none; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 12px; background: var(--surface); color: var(--ink); border: 1px solid var(--ink-soft); border-radius: 999px; font: 500 12px/18px var(--font-ui); cursor: pointer; transition: border-color 200ms ease, transform 420ms var(--spring); }
+.chip:hover { border-color: var(--ink); transform: translateY(-1px); }
+.chip .disc { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ink); background: linear-gradient(90deg, var(--ink) 50%, transparent 50%); transition: transform 700ms var(--spring); }
+:root[data-mode="paper"] .chip .disc { transform: rotate(180deg); }
+.marker { width: 2px; height: 14px; background: var(--accent); border-radius: 1px; }
+
+/* Hero */
+.hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 32px; align-items: center; padding-top: 16px; }
+.hero-text { position: relative; z-index: 1; display: grid; gap: 16px; min-width: 0; }
+/* The portrait is painted by the ink field itself; this box only reserves its place and carries its description. */
+.portrait { --pw: clamp(240px, 42vw, 600px); position: relative; margin: 0; width: var(--pw); aspect-ratio: 2 / 3;
+  /* The frame's empty left edge tucks under the text column and the faded area below the circle takes
+     no space, so the head sits close to the name and level with it. */
+  margin-left: calc(var(--pw) * -0.24); margin-bottom: calc(var(--pw) * -0.42); }
+.portrait img { display: none; width: 100%; height: 100%; object-fit: cover;
+  -webkit-mask-image: radial-gradient(circle at 55% 29%, #000 calc(var(--pw) * .37), transparent calc(var(--pw) * .62)); mask-image: radial-gradient(circle at 55% 29%, #000 calc(var(--pw) * .37), transparent calc(var(--pw) * .62)); }
+.no-gl .portrait img { display: block; }
+.hero h1 { margin: 0; font: 700 clamp(40px, 7vw, 72px)/1.05 var(--font-display); letter-spacing: -0.01em; text-wrap: balance; max-width: 12ch; }
+.role { margin: 0; font: 500 18px/26px var(--font-body); }
+.thesis { margin: 0; max-width: 30ch; font: 400 clamp(20px, 2.4vw, 26px)/1.4 var(--font-display); text-wrap: balance; }
+#orbit { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 0; }
+/* Depth: the ink field is the back plane, the portrait and its orbit sit in the middle, the words sit in front.
+   Layers shift in opposite directions around that middle plane as the cursor moves, and the portrait drifts
+   a little slower than the page when scrolling. The values come from the script; without it nothing moves. */
+.portrait, #orbit { translate: calc(var(--plx, 0) * 8px) calc(var(--ply, 0) * 6px + var(--sy, 0) * 1px); }
+.hero-text { translate: calc(var(--plx, 0) * -5px) calc(var(--ply, 0) * -3px); }
+.hub, .story { translate: calc(var(--plx, 0) * -2.5px) calc(var(--ply, 0) * -1.5px); }
+@media (max-width: 720px) { .hero { gap: 8px; grid-template-columns: minmax(0, 1fr); } .portrait { --pw: min(70vw, 340px); order: -1; justify-self: center; margin-left: 0; margin-bottom: calc(var(--pw) * -0.46); } }
+
+/* Link hub */
+.hub { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) { .hub { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.hub a, .hub button {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: grid; gap: 4px; align-content: start;
+  min-height: 92px; padding: 16px;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--ink-soft); border-radius: 6px;
+  text-decoration: none; text-align: left; font: inherit; cursor: pointer;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px));
+  transition: transform 700ms var(--spring), border-color 300ms ease, background-color 160ms ease, color 160ms ease;
+}
+.hub a:hover, .hub button:hover { --lift: -3px; border-color: var(--ink); }
+.tracking { transition: transform 240ms cubic-bezier(.2, .8, .2, 1), border-color 300ms ease, background-color 160ms ease, color 160ms ease !important; }
+.hub .label { font: 700 18px/24px var(--font-display); }
+.hub .meta { font: 400 12px/18px var(--font-mono); letter-spacing: 0.04em; overflow-wrap: anywhere; }
+.hub .arrow { position: absolute; right: 14px; top: 14px; font: 400 14px/1 var(--font-ui); transition: transform 520ms var(--spring); }
+.hub a:hover .arrow, .hub button:hover .arrow { transform: translate(3px, -3px); }
+/* Liquid fill: spills in from where the pointer enters, drains toward where it leaves. */
+.hub .fill {
+  position: absolute; inset: 0; z-index: -1;
+  /* The liquid carries a sheen that follows the cursor across its surface. */
+  background: radial-gradient(130px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--wood) 72%, var(--ink) 28%), var(--wood) 70%);
+  clip-path: circle(0px at var(--fx, 50%) var(--fy, 50%));
+  transition: clip-path 900ms var(--spring);
+}
+.hub .on .fill, .hub .on > .fill { clip-path: circle(150% at var(--fx, 50%) var(--fy, 50%)); }
+.hub a:active, .hub button:active { transform: translateY(0) scale(.985); background: var(--ink); color: var(--on-ink); transition-duration: 90ms; }
+.hub a:active .fill, .hub button:active .fill { opacity: 0; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* Story */
+.story { display: grid; gap: 16px; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--ink-soft); position: relative; }
+.tab { appearance: none; background: none; border: 0; color: var(--ink); font: 500 14px/20px var(--font-ui); padding: 12px 16px; cursor: pointer; }
+.tab-ink { position: absolute; bottom: -1px; height: 2px; background: var(--accent); border-radius: 1px; left: 0; width: 0; transition: left 650ms var(--spring), width 650ms var(--spring); }
+.region { position: relative; min-height: 360px; }
+.panel { display: grid; gap: 24px; }
+.panel h2 { margin: 0; font: 700 28px/36px var(--font-display); text-wrap: balance; }
+.panel p { margin: 0; max-width: 62ch; }
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--ink-soft); border-radius: 10px; padding: 24px; display: grid; gap: 12px; min-width: 0; transform: perspective(1200px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); transition: transform 800ms var(--spring), border-color 300ms ease; }
+.card h3 { margin: 0; font: 700 20px/28px var(--font-display); }
+.card .kind { font: 400 12px/18px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; display: flex; gap: 8px; align-items: center; }
+.card .kind::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 400ms ease;
+  /* Same hover material as the link buttons: the wood fill with a soft sheen under the cursor. */
+  background: radial-gradient(130px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--wood) 72%, var(--ink) 28%), var(--wood) 70%); }
+.card.hovering { --lift: -2px; border-color: color-mix(in srgb, var(--ink) 40%, transparent); }
+.card.hovering::before { opacity: 1; }
+.card a { color: var(--ink); text-decoration: none; padding-bottom: 2px; justify-self: start;
+  background-image: linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--ink-soft), var(--ink-soft));
+  background-repeat: no-repeat; background-position: 0 100%, 0 100%; background-size: 0% 2px, 100% 1px;
+  transition: background-size 700ms var(--spring); }
+.card a:hover, .card a:focus-visible { background-size: 100% 2px, 100% 1px; }
+.chip, .tab { transition: transform 600ms var(--spring), border-color 200ms ease; }
+.magnet { transform: translate(var(--tx, 0px), var(--ty, 0px)); }
+.magnet.tracking { transition: transform 200ms cubic-bezier(.2, .8, .2, 1) !important; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 40px 1fr; gap: 12px; counter-increment: s; }
+.steps li::before { content: counter(s, decimal-leading-zero); font: 400 12px/24px var(--font-mono); letter-spacing: 0.08em; color: var(--accent); }
+.ghost { position: absolute; inset: 0 0 auto 0; pointer-events: none; }
+
+footer { font: 400 12px/18px var(--font-mono); letter-spacing: 0.04em; max-width: 62ch; }
+@media (max-width: 720px) { .page { padding-block: 16px 96px; gap: 48px; } }
+/* ---------- Site additions (phase 4) ---------- */
+.now { margin: 0; display: inline-flex; align-items: center; gap: 10px; font: 400 14px/20px var(--font-ui); max-width: 46ch; }
+.now .pulse { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 0 var(--ink-soft); animation: breathe 2.8s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { box-shadow: 0 0 0 0 var(--ink-soft); } 50% { box-shadow: 0 0 0 6px transparent; } }
+
+@media (prefers-reduced-motion: reduce) { .now .pulse { animation: none; } }
+.chip.lang { text-decoration: none; }
+.hub-wrap { display: grid; gap: 12px; }
+.open { margin: 0; font: 400 13px/20px var(--font-ui); opacity: .82; }
+.site-foot { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--ink-soft); padding-top: 16px; max-width: none; }
+.site-foot a { color: inherit; }
+.wip { margin: 0; font: 400 15px/24px var(--font-body); max-width: 56ch; opacity: .9; }
+.skip { position: absolute; left: -9999px; top: 8px; z-index: 50; background: var(--surface); color: var(--ink); padding: 8px 12px; border-radius: 6px; }
+.skip:focus { left: 16px; }
+.stack { display: grid; gap: 64px; }
+@media (max-width: 720px) { .stack { gap: 48px; } }
+.chip.lang .short { display: none; }
+@media (max-width: 520px) {
+  .chip.lang .long { display: none; } .chip.lang .short { display: inline; }
+  .bar { flex-wrap: nowrap; } .bar-end { gap: 8px; flex-wrap: nowrap; } .bar .chip { padding: 6px 10px; }
+  .mark { font-size: 12px; letter-spacing: .06em; white-space: nowrap; }
+}
+.now { align-items: flex-start; }
+.now .pulse { margin-top: 6px; }
+/* Touch screens: the portrait is the masked photograph itself, so it moves exactly with the scroll.
+   A soft duotone-like filter keeps it close to the field-painted look on desktop. */
+.touch .portrait img { display: block; filter: saturate(.55) sepia(.12) contrast(.98); animation: develop 1.8s ease-out both; }
+:root[data-mode="paper"].touch .portrait img { filter: saturate(.5) sepia(.18) brightness(1.03); }
+@keyframes develop { from { opacity: 0; filter: saturate(0) blur(6px); } }
+@media (prefers-reduced-motion: reduce) { .touch .portrait img { animation: none; } }
+/* The orbit canvas already erases its far half where the head is, so on touch screens it sits above the
+   photograph: the near half passes in front of the face and neck, the far half disappears behind the head. */
+.touch .portrait { z-index: 0; }
+.touch #orbit { z-index: 1; }
+
+/* ---------- Story sections (phase 5) ---------- */
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+.mark { color: inherit; text-decoration: none; }
+.sec { display: grid; gap: 24px; padding-top: 32px; }
+.sec-head { display: grid; gap: 12px; max-width: 62ch; }
+.eyebrow { margin: 0; font: 400 12px/18px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ""; width: 2px; height: 14px; background: var(--accent); border-radius: 1px; }
+.sec h2, .case h2 { margin: 0; font: 700 clamp(26px, 3.4vw, 36px)/1.2 var(--font-display); text-wrap: balance; }
+.lead { margin: 0; font: 400 18px/1.6 var(--font-body); max-width: 60ch; }
+
+/* Work */
+a.card { color: var(--ink); text-decoration: none; position: relative; isolation: isolate; }
+.card p { margin: 0; }
+.card .proof { font: 400 14px/1.55 var(--font-body); opacity: .85; border-left: 2px solid var(--ink-soft); padding-left: 12px; }
+.card .more { font: 500 13px/20px var(--font-ui); justify-self: start; padding-bottom: 2px;
+  background-image: linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--ink-soft), var(--ink-soft));
+  background-repeat: no-repeat; background-position: 0 100%, 0 100%; background-size: 0% 2px, 100% 1px; transition: background-size 700ms var(--spring); }
+.card:hover .more, .card:focus-visible .more { background-size: 100% 2px, 100% 1px; }
+.card .more::after { content: " →"; }
+.now-card { padding: 28px; gap: 14px; }
+.now-card h3 { font-size: clamp(22px, 2.6vw, 28px); line-height: 1.25; }
+.now-card > p { max-width: 64ch; }
+.principles { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.principles li { font: 500 12px/18px var(--font-ui); padding: 5px 10px; border: 1px solid var(--ink-soft); border-radius: 999px; background: var(--page); }
+
+/* How I build: five stops along a path; the orange dot travels it as the section scrolls. */
+.method-wrap { position: relative; }
+.method { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; position: relative; }
+.method-track { position: absolute; left: 0; right: 0; top: 7px; height: 1px; background: var(--ink-soft); }
+.method-dot { position: absolute; top: -5px; left: 0; width: 11px; height: 11px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent); }
+.stop { display: grid; gap: 6px; align-content: start; position: relative; padding-top: 28px; min-width: 0; }
+.stop-mark { position: absolute; top: 2px; left: 0; width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--page); }
+.stop strong { font: 700 17px/1.3 var(--font-display); }
+.stop span:last-child { font: 400 15px/1.5 var(--font-body); }
+@media (max-width: 720px) {
+  .method { grid-template-columns: 1fr; gap: 20px; padding-left: 28px; }
+  .method-track { left: 5px; right: auto; top: 0; bottom: 0; width: 1px; height: auto; }
+  .method-dot { left: -5px; top: 0; }
+  .stop { padding-top: 0; }
+  .stop-mark { left: -28px; top: 4px; }
+}
+
+/* Research */
+.research { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 32px; padding: 32px; background: var(--surface); border: 1px solid var(--ink-soft); border-radius: 10px; }
+.research-text { display: grid; gap: 14px; align-content: start; }
+.research-text p { margin: 0; max-width: 56ch; }
+.tools { font: 400 12px/18px var(--font-mono); letter-spacing: .04em; opacity: .85; }
+.stats { margin: 0; display: grid; gap: 20px; align-content: center; }
+.stats div { display: grid; gap: 2px; }
+.stats dt { font: 700 clamp(36px, 5vw, 52px)/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.stats dt.grade { font-size: 28px; }
+.stats dd { margin: 0; font: 400 14px/1.45 var(--font-body); max-width: 30ch; }
+@media (max-width: 720px) { .research { grid-template-columns: 1fr; padding: 24px; } }
+
+/* Path: a line of ink with capsule markers; the line draws itself as you scroll. */
+.timeline-wrap { position: relative; padding-left: 32px; }
+.timeline-line { position: absolute; left: 6px; top: 8px; bottom: 8px; width: 1.5px; background: var(--ink); transform-origin: top; opacity: .5; }
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 22px; }
+.timeline li { position: relative; display: grid; grid-template-columns: 110px minmax(0, 1fr); column-gap: 20px; row-gap: 2px; }
+.tl-mark { position: absolute; left: -32px; top: 5px; width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--page); }
+.timeline li:first-child .tl-mark { background: var(--accent); border-color: var(--accent); }
+.tl-when { grid-row: span 2; font: 400 12px/22px var(--font-mono); letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.timeline strong { font: 700 17px/1.35 var(--font-display); }
+.tl-line { font: 400 15px/1.5 var(--font-body); max-width: 60ch; }
+@media (max-width: 720px) { .timeline li { grid-template-columns: 1fr; } .tl-when { grid-row: auto; } }
+
+/* Workshop */
+.tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tile { display: grid; gap: 6px; align-content: start; padding: 18px; border: 1px dashed var(--ink-soft); border-radius: 8px; background: color-mix(in srgb, var(--surface) 60%, transparent); }
+.tile strong { font: 700 17px/1.3 var(--font-display); }
+.tile span { font: 400 14px/1.5 var(--font-body); }
+@media (max-width: 720px) { .tiles { grid-template-columns: 1fr; } }
+
+/* Let's talk */
+.talk { justify-items: start; padding-block: 48px 16px; }
+.talk h2 { font-size: clamp(30px, 4.6vw, 48px); }
+.hub-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 780px; }
+@media (max-width: 720px) { .hub-3 { grid-template-columns: 1fr; } }
+
+/* ---------- Case studies ---------- */
+.case { display: grid; gap: 40px; max-width: 760px; }
+.back { font: 500 13px/20px var(--font-ui); color: var(--ink); text-decoration: none; justify-self: start; opacity: .85; }
+.back:hover { opacity: 1; }
+.case-head { display: grid; gap: 16px; }
+.case h1 { margin: 0; font: 700 clamp(36px, 6vw, 60px)/1.08 var(--font-display); letter-spacing: -.01em; text-wrap: balance; }
+.case-lead { margin: 0; font: 400 clamp(18px, 2vw, 21px)/1.6 var(--font-body); }
+.notice { margin: 0; padding: 14px 16px; border: 1px solid var(--ink-soft); border-radius: 8px; background: var(--surface); font: 400 15px/1.55 var(--font-body); }
+.case-sec { display: grid; gap: 14px; }
+.case-sec p { margin: 0; }
+.case-list { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
+.case-list li::marker { color: var(--accent); }
+.flow { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 4px; align-items: center; }
+.flow li { display: flex; align-items: center; gap: 8px; }
+.flow li span { padding: 8px 12px; border: 1px solid var(--ink-soft); border-radius: 6px; background: var(--surface); font: 500 13px/18px var(--font-ui); }
+.flow li:not(:last-child)::after { content: "→"; opacity: .6; font: 400 14px/1 var(--font-ui); }
+.principle-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.principle-cards li { display: grid; gap: 6px; padding: 18px; border: 1px solid var(--ink-soft); border-radius: 8px; background: var(--surface); }
+.principle-cards strong { font: 700 17px/1.3 var(--font-display); }
+.principle-cards span { font: 400 15px/1.5 var(--font-body); }
+@media (max-width: 720px) { .principle-cards { grid-template-columns: 1fr; } }
+.case-links { margin: 0; display: flex; gap: 16px; flex-wrap: wrap; }
+.case-links a, .case-nav a { color: var(--ink); font: 500 14px/20px var(--font-ui); }
+.limits { padding: 20px; border-radius: 8px; border: 1px solid var(--ink-soft); border-left: 3px solid var(--accent); background: var(--surface); display: grid; gap: 8px; }
+.limits h2 { font-size: 20px; }
+.limits p { margin: 0; }
+.closing { margin: 0; font: 400 clamp(20px, 2.4vw, 24px)/1.45 var(--font-display); text-wrap: balance; }
+.case-nav { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--ink-soft); padding-top: 20px; }
+
+/* Card to case study: the project title glides into the page heading (cross-document View Transitions). */
+@view-transition { navigation: auto; }
+::view-transition-group(*) { animation-duration: 520ms; animation-timing-function: cubic-bezier(.2, .9, .3, 1); }
+@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+
+/* ---------- Scroll moments: progressive enhancement, every element is complete without them ---------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .method-wrap { view-timeline: --method block; }
+    .method-dot { animation: travel linear both; }
+    .method-wrap .method-dot { animation-timeline: --method; animation-range: entry 60% cover 62%; }
+    @keyframes travel { from { left: 0; } to { left: calc(100% - 11px); } }
+    .stop-mark { animation: light linear both; }
+    .method-wrap .stop-mark { animation-timeline: --method; }
+    .method-wrap .stop:nth-child(1) .stop-mark { animation-range: entry 60% entry 75%; }
+    .method-wrap .stop:nth-child(2) .stop-mark { animation-range: entry 80% cover 32%; }
+    .method-wrap .stop:nth-child(3) .stop-mark { animation-range: cover 34% cover 42%; }
+    .method-wrap .stop:nth-child(4) .stop-mark { animation-range: cover 44% cover 52%; }
+    .method-wrap .stop:nth-child(5) .stop-mark { animation-range: cover 54% cover 62%; }
+    @keyframes light { from { background: var(--page); } to { background: var(--ink); } }
+    .timeline-wrap { view-timeline: --path block; }
+    .timeline-line { animation: draw linear both; }
+    .timeline-wrap .timeline-line { animation-timeline: --path; animation-range: entry 20% cover 70%; }
+    @keyframes draw { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+    .sec-head, .research, .tiles, .now-card, .cards .card, .case-sec { animation: rise linear both; }
+    main .sec-head, main .research, main .tiles, main .now-card, main .cards .card, main .case-sec { animation-timeline: view(); animation-range: entry 0% entry 40%; }
+    @keyframes rise { from { opacity: .35; translate: 0 18px; } }
+  }
+  @media (prefers-reduced-motion: no-preference) and (max-width: 720px) {
+    @keyframes travel { from { top: 0; left: -5px; } to { top: calc(100% - 11px); left: -5px; } }
+  }
+}
+
+.principle-cards li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.chip { white-space: nowrap; }
+@media (max-width: 520px) { .mark-rest { display: none; } }
+
+/* The story ends where the orbit settles: a small orbit around the closing contact button. */
+.mini-orbit { position: absolute; right: 12px; top: 12px; width: 30px; height: 16px; border: 1px solid var(--ink-soft); border-radius: 50%; transform: rotate(-18deg); }
+.mini-dot { position: absolute; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); offset-path: ellipse(15px 8px at 15px 8px); offset-rotate: 0deg; offset-anchor: center; offset-distance: 20%; animation: mini-orbit 6.5s cubic-bezier(.45, .05, .55, .95) infinite; }
+@keyframes mini-orbit { to { offset-distance: 120%; } }
+@media (prefers-reduced-motion: reduce) { .mini-dot { animation: none; } }
+.nf { margin: 0; font: 700 clamp(34px, 6vw, 56px)/1.1 var(--font-display); text-wrap: balance; }
+.lead a { color: var(--ink); }

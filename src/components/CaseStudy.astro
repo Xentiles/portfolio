@@ -1,0 +1,40 @@
+---
+import type { CaseStudy } from "../i18n/work";
+import { workUi } from "../i18n/work";
+import type { Lang } from "../i18n/strings";
+interface Props { lang: Lang; study: CaseStudy; next: { title: string; href: string }; back: string }
+const { lang, study, next, back } = Astro.props;
+const ui = workUi[lang];
+---
+<article class="case">
+  <a class="back" href={back} data-ink>← {ui.back}</a>
+  <header class="case-head">
+    <p class="eyebrow" data-ink>{ui.label} · {study.kind}</p>
+    <h1 style={`view-transition-name: wt-${study.key}`} data-ink>{study.title}</h1>
+    <p class="case-lead" data-ink>{study.lead}</p>
+    {study.notice && <p class="notice tex" data-ink>{study.notice}</p>}
+  </header>
+  {study.sections.map((sec) => (
+    <section class="case-sec" data-ink>
+      <h2>{sec.title}</h2>
+      {sec.blocks.map((b) => (
+        b.type === "p" ? <p>{b.text}</p> :
+        b.type === "list" ? <ul class="case-list">{b.items.map((i) => <li>{i}</li>)}</ul> :
+        b.type === "flow" ? <ol class="flow">{b.items.map((i) => <li><span>{i}</span></li>)}</ol> :
+        <ul class="principle-cards">{b.items.map(([n, l]) => <li class="tex"><strong>{n}</strong><span>{l}</span></li>)}</ul>
+      ))}
+    </section>
+  ))}
+  {study.links && (
+    <p class="case-links" data-ink>{study.links.map(([label, href]) => <a href={href} target="_blank" rel="noopener">{label} ↗</a>)}</p>
+  )}
+  <aside class="limits tex" data-ink>
+    <h2>{study.limits.title}</h2>
+    <p>{study.limits.text}</p>
+  </aside>
+  {study.closing && <p class="closing" data-ink>{study.closing}</p>}
+  <nav class="case-nav" data-ink>
+    <a href={back}>← {ui.back}</a>
+    <a href={next.href}>{ui.next}: {next.title} →</a>
+  </nav>
+</article>

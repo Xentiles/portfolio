@@ -1,0 +1,24 @@
+---
+import { strings, type Lang } from "../i18n/strings";
+interface Props { lang: Lang }
+const t = strings[Astro.props.lang];
+const links = [
+  { label: "GitHub", meta: "@Xentiles", href: "https://github.com/Xentiles" },
+  { label: "LinkedIn", meta: "Dominik Nagy", href: "https://www.linkedin.com/in/dominik-nagy-841002144/" },
+  { label: "X", meta: "@Xentiles1", href: "https://x.com/Xentiles1" },
+];
+---
+<div class="hub-wrap">
+  <nav class="hub" aria-label={t.hubLabel}>
+    {links.map((l) => (
+      <a class="tex" href={l.href} target="_blank" rel="noopener me" data-ink>
+        <span class="fill"></span><span class="label">{l.label}</span><span class="meta">{l.meta}</span><span class="arrow" aria-hidden="true">↗</span>
+      </a>
+    ))}
+    <!-- The address is assembled only when clicked, so it never sits in the page for scrapers. -->
+    <button class="tex" type="button" data-contact data-ink>
+      <span class="fill"></span><span class="label">{t.contact}</span><span class="meta">{t.copyEmail}</span><span class="arrow" aria-hidden="true">⧉</span>
+    </button>
+  </nav>
+  <p class="open" data-ink>{t.open}</p>
+</div>
