@@ -43,6 +43,7 @@ export const home = {
       text: "My bachelor's thesis, co-authored and published by Halmstad University. We built a traceable computer-vision pipeline that learns a library of visual concepts and reuses them.",
       stats: [["79,721", "observations evaluated"], ["95.54%", "of the time, an existing descriptor was reused"]],
       grade: "Graded 5 out of 5.",
+      link: ["Read the thesis in DiVA", "https://urn.kb.se/resolve?urn=urn:nbn:se:hh:diva-59395"],
       tools: "PyTorch · binary autoencoder · SQLite · Hamming-distance matching",
     },
     path: {
@@ -111,6 +112,7 @@ export const home = {
       text: "Mitt examensarbete på kandidatnivå, skrivet tillsammans med en medförfattare och publicerat av Högskolan i Halmstad. Vi byggde en spårbar pipeline för datorseende som lär sig ett bibliotek av visuella begrepp och återanvänder dem.",
       stats: [["79 721", "observationer utvärderade"], ["95,54 %", "av gångerna återanvändes en befintlig deskriptor"]],
       grade: "Betyg 5 av 5.",
+      link: ["Läs uppsatsen i DiVA", "https://urn.kb.se/resolve?urn=urn:nbn:se:hh:diva-59395"],
       tools: "PyTorch · binär autoencoder · SQLite · matchning med Hammingavstånd",
     },
     path: {

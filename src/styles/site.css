@@ -308,6 +308,12 @@ a.card { color: var(--ink); text-decoration: none; position: relative; isolation
 .case h1 { margin: 0; font: 700 clamp(36px, 6vw, 60px)/1.08 var(--font-display); letter-spacing: -.01em; text-wrap: balance; }
 .case-lead { margin: 0; font: 400 clamp(18px, 2vw, 21px)/1.6 var(--font-body); }
 .notice { margin: 0; padding: 14px 16px; border: 1px solid var(--ink-soft); border-radius: 8px; background: var(--surface); font: 400 15px/1.55 var(--font-body); }
+.case-media { margin: 0; display: grid; gap: 10px; }
+.case-media video, .case-media img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--ink-soft); background: var(--surface); }
+.case-media video { background: #f3efe8; }
+.case-media video { aspect-ratio: 16 / 9; }
+.case-sec .case-media { margin-top: 6px; }
+.case-media figcaption { font: 400 12px/18px var(--font-mono); letter-spacing: .04em; opacity: .8; }
 .case-sec { display: grid; gap: 14px; }
 .case-sec p { margin: 0; }
 .case-list { margin: 0; padding-left: 20px; display: grid; gap: 10px; }

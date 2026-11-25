@@ -58,6 +58,7 @@ const slugs = workSlugs[lang];
       <h2 id="research-h" data-ink>{h.research.title}</h2>
       <p data-ink>{h.research.text}</p>
       <p class="tools" data-ink>{h.research.tools}</p>
+      <p class="case-links" data-ink><a href={h.research.link[1]} target="_blank" rel="noopener">{h.research.link[0]} ↗</a></p>
     </div>
     <dl class="stats">
       {h.research.stats.map(([n, l]) => (<div data-ink><dt>{n}</dt><dd>{l}</dd></div>))}

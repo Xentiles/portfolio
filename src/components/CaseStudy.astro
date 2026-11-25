@@ -14,6 +14,15 @@ const ui = workUi[lang];
     <p class="case-lead" data-ink>{study.lead}</p>
     {study.notice && <p class="notice tex" data-ink>{study.notice}</p>}
   </header>
+  {study.media && (
+    <figure class="case-media tex" data-ink>
+      <video data-loop muted loop playsinline preload="metadata" poster={study.media.poster} width="1280" height="720" aria-label={study.media.alt}>
+        <source src={study.media.webm} type="video/webm" />
+        <source src={study.media.mp4} type="video/mp4" />
+      </video>
+      <figcaption>{study.media.caption}</figcaption>
+    </figure>
+  )}
   {study.sections.map((sec) => (
     <section class="case-sec" data-ink>
       <h2>{sec.title}</h2>
@@ -21,6 +30,7 @@ const ui = workUi[lang];
         b.type === "p" ? <p>{b.text}</p> :
         b.type === "list" ? <ul class="case-list">{b.items.map((i) => <li>{i}</li>)}</ul> :
         b.type === "flow" ? <ol class="flow">{b.items.map((i) => <li><span>{i}</span></li>)}</ol> :
+        b.type === "figure" ? <figure class="case-media"><img src={b.src} alt={b.alt} width="1600" height="1000" loading="lazy" decoding="async" /><figcaption>{b.caption}</figcaption></figure> :
         <ul class="principle-cards">{b.items.map(([n, l]) => <li class="tex"><strong>{n}</strong><span>{l}</span></li>)}</ul>
       ))}
     </section>

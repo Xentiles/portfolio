@@ -6,7 +6,8 @@ type Block =
   | { type: "p"; text: string }
   | { type: "list"; items: string[] }
   | { type: "flow"; items: string[] }
-  | { type: "cards"; items: [string, string][] };
+  | { type: "cards"; items: [string, string][] }
+  | { type: "figure"; src: string; alt: string; caption: string };
 export type Section = { title: string; blocks: Block[] };
 export type CaseStudy = {
   key: "inspection" | "feedback" | "notchq";
@@ -16,6 +17,7 @@ export type CaseStudy = {
   notice?: string;
   sections: Section[];
   links?: [string, string][];
+  media?: { mp4: string; webm: string; poster: string; alt: string; caption: string };
   limits: { title: string; text: string };
   closing?: string;
 };
@@ -75,13 +77,13 @@ const en: CaseStudy[] = [
         "A local workbench that imports reviews and comments.",
         "Classification with keyword rules or a connected AI model, chosen per run.",
         "Every decision stored with its provenance, so any result can be traced back to the text that caused it.",
-      ] }] },
-      { title: "How it works", blocks: [{ type: "flow", items: ["Import", "Rules or AI", "Decisions with provenance", "Analytics", "Review interface"] }] },
+      ] }, { type: "figure", src: "/img/fi/fi-overview.webp", alt: "The Feedback Intelligence overview in the Orbital Clarity Charcoal theme: a decision-source switch between a local open model, a rules baseline and an AI reference, the current dataset and version, and filters.", caption: "The overview. Pick which method's decisions to look at, then filter. Synthetic showcase data." }] },
+      { title: "How it works", blocks: [{ type: "flow", items: ["Import", "Rules or AI", "Decisions with provenance", "Analytics", "Review interface"] }, { type: "figure", src: "/img/fi/fi-signal.webp", alt: "A signal page with the delivery-delay rate over time as an orange line against a dashed average, with latest, average and range above it.", caption: "A signal over time. Every point opens the records behind it." }] },
       { title: "What I decided and why", blocks: [{ type: "list", items: [
         "Durable jobs and an outbox, so a restart never loses work or sends an export twice.",
         "Consent before any external AI call, so no feedback leaves the machine without a clear choice.",
       ] }] },
-      { title: "Proof", blocks: [{ type: "p", text: "A 10,000-record run survived a worker restart with every export counted. The release review, tests and walkthrough are in the repository." }] },
+      { title: "Proof", blocks: [{ type: "p", text: "A 10,000-record run survived a worker restart with every export counted. The release review, tests and walkthrough are in the repository." }, { type: "figure", src: "/img/fi/fi-evaluation.webp", alt: "An evaluation table comparing a local open model, a general-purpose LLM and a rules baseline on run status, successful records, errors, topic accuracy and macro-F1, marked as AI reference, not human gold.", caption: "The model comparison, labelled honestly: measured against an AI reference, not human-labelled truth." }] },
     ],
     links: [["Repository on GitHub", "https://github.com/Xentiles/feedback-intelligence"]],
     limits: { title: "What this does not prove yet", text: "AI accuracy on real customer data. Tests so far use synthetic data, and there is no measured business impact yet." },
@@ -106,6 +108,7 @@ const en: CaseStudy[] = [
       { title: "Proof", blocks: [{ type: "p", text: "Signed in-app updates, sleep and wake recovery, and fixture tests for the parsing." }] },
     ],
     links: [["Repository on GitHub", "https://github.com/Xentiles/NotchQ"]],
+    media: { mp4: "/media/notchq-demo.mp4", webm: "/media/notchq-demo.webm", poster: "/media/notchq-poster.jpg", alt: "NotchQ on a MacBook: two small percentages beside the notch for Codex and Claude Code, a menu with reset times, and the settings window.", caption: "The NotchQ launch clip. Readings are illustrative." },
     limits: { title: "What this does not prove yet", text: "Behaviour on Intel Macs and older macOS versions, which haven't been verified." },
   },
 ];
@@ -165,13 +168,13 @@ const sv: CaseStudy[] = [
         "En lokal arbetsyta som importerar recensioner och kommentarer.",
         "Klassificering med nyckelordsregler eller en ansluten AI-modell, vald per körning.",
         "Varje beslut sparas med sitt ursprung, så att alla resultat kan spåras tillbaka till texten som gav upphov till dem.",
-      ] }] },
-      { title: "Hur det fungerar", blocks: [{ type: "flow", items: ["Import", "Regler eller AI", "Beslut med ursprung", "Analys", "Granskningsvy"] }] },
+      ] }, { type: "figure", src: "/img/fi/fi-overview.webp", alt: "Översikten i Feedback Intelligence i Orbital Clarity-temat Charcoal: ett val mellan en lokal öppen modell, en regelbaslinje och en AI-referens, aktuell datamängd och version samt filter.", caption: "Översikten. Välj vilken metods beslut du vill se och filtrera sedan. Syntetisk demodata." }] },
+      { title: "Hur det fungerar", blocks: [{ type: "flow", items: ["Import", "Regler eller AI", "Beslut med ursprung", "Analys", "Granskningsvy"] }, { type: "figure", src: "/img/fi/fi-signal.webp", alt: "En signalsida där andelen leveransförseningar över tid visas som en orange linje mot ett streckat medelvärde, med senaste värde, medelvärde och spann ovanför.", caption: "En signal över tid. Varje punkt öppnar posterna bakom den." }] },
       { title: "Vad jag beslutade och varför", blocks: [{ type: "list", items: [
         "Beständiga jobb och en utkorg, så att en omstart aldrig tappar arbete eller skickar en export två gånger.",
         "Samtycke före varje anrop till extern AI, så att ingen feedback lämnar datorn utan ett tydligt val.",
       ] }] },
-      { title: "Belägg", blocks: [{ type: "p", text: "En körning med 10 000 poster klarade en omstart av arbetsprocessen, med varje export räknad. Releasegranskning, tester och genomgång finns i kodförrådet." }] },
+      { title: "Belägg", blocks: [{ type: "p", text: "En körning med 10 000 poster klarade en omstart av arbetsprocessen, med varje export räknad. Releasegranskning, tester och genomgång finns i kodförrådet." }, { type: "figure", src: "/img/fi/fi-evaluation.webp", alt: "En utvärderingstabell som jämför en lokal öppen modell, en allmän språkmodell och en regelbaslinje på körstatus, lyckade poster, fel, ämnesträffsäkerhet och makro-F1, märkt som AI-referens och inte mänskligt facit.", caption: "Modelljämförelsen, ärligt märkt: mätt mot en AI-referens, inte mot mänskligt märkt facit." }] },
     ],
     links: [["Kodförråd på GitHub", "https://github.com/Xentiles/feedback-intelligence"]],
     limits: { title: "Det här är inte bevisat än", text: "AI:ns träffsäkerhet på riktig kunddata. Testerna hittills använder syntetisk data, och det finns ingen uppmätt affärsnytta än." },
@@ -196,6 +199,7 @@ const sv: CaseStudy[] = [
       { title: "Belägg", blocks: [{ type: "p", text: "Signerade uppdateringar i appen, återhämtning efter vila och fixturtester för tolkningen av data." }] },
     ],
     links: [["Kodförråd på GitHub", "https://github.com/Xentiles/NotchQ"]],
+    media: { mp4: "/media/notchq-demo.mp4", webm: "/media/notchq-demo.webm", poster: "/media/notchq-poster.jpg", alt: "NotchQ på en MacBook: två små procenttal bredvid kameraskåran för Codex och Claude Code, en meny med återställningstider och inställningsfönstret.", caption: "NotchQ:s lanseringsklipp. Värdena är exempel." },
     limits: { title: "Det här är inte bevisat än", text: "Beteendet på Intel-Macar och äldre macOS-versioner, som inte har verifierats." },
   },
 ];
