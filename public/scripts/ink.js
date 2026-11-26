@@ -11,7 +11,10 @@
   }
   addEventListener("error", e => reportError(e.error || e.message));
   addEventListener("unhandledrejection", e => reportError(e.reason));
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Read live, not once: a tab the browser restores at startup can see a wrong answer for a moment
+  // (Chromium on Windows), which used to leave the whole page paused until reload.
+  const reduceQuery = matchMedia("(prefers-reduced-motion: reduce)");
+  let reduce = reduceQuery.matches;
   // On touch screens the page scrolls on its own thread, so anything the field paints a frame later
   // than the scroll (the portrait, the scroll parallax) visibly jitters. There the portrait is a plain
   // masked image that scrolls with the page, and scroll parallax is off.
@@ -30,7 +33,7 @@
   let state = { ...defaults };
   try { Object.assign(state, JSON.parse(localStorage.getItem("dn-site") || "{}")); } catch (e) {}
   const save = () => { try { localStorage.setItem("dn-site", JSON.stringify(state)); } catch (e) {} };
-  let paused = reduce;
+  let paused = reduce, pausedByHand = false;
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const css = n => getComputedStyle(root).getPropertyValue(n).trim();
 
@@ -289,7 +292,7 @@
 
   /* ---------- Capsule field (WebGL2) ---------- */
   const canvas = document.getElementById("field");
-  const gl = canvas.getContext("webgl2", { antialias: false, alpha: false });
+  let gl = canvas.getContext("webgl2", { antialias: false, alpha: false });
   let glOK = false;
   // Any graphics failure falls back to the still pattern and says why, instead of leaving a black page.
   function fieldFail(reason) {
@@ -760,7 +763,30 @@ void main(){
     vt.ready.then(() => root.animate({ clipPath: [`circle(0px at ${cx}px ${cy}px)`, `circle(${rad}px at ${cx}px ${cy}px)`] }, { duration: 760, easing: "cubic-bezier(.65, 0, .35, 1)", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
     vt.finished.finally(() => root.classList.remove("eclipsing"));
   });
-  pauseBtn.addEventListener("click", () => { paused = !paused; clearMeteors(); sync(); });
+  pauseBtn.addEventListener("click", () => { paused = !paused; pausedByHand = true; clearMeteors(); sync(); });
+
+  /* ---------- Waking up after a restored or background tab ---------- */
+  // Follow the reduced-motion setting when it changes (or settles after a browser restart), unless the
+  // visitor has pressed pause or play themselves.
+  reduceQuery.addEventListener("change", () => {
+    reduce = reduceQuery.matches;
+    if (!pausedByHand) { paused = reduce; clearMeteors(); sync(); }
+  });
+  // A tab restored in the background can start with a zero-size window, no graphics context yet, or
+  // clips the browser refused to play. When it becomes visible, check each and catch up.
+  function wake() {
+    if (document.hidden) return;
+    if (reduceQuery.matches !== reduce) { reduce = reduceQuery.matches; if (!pausedByHand) { paused = reduce; clearMeteors(); } }
+    if (!gl) { gl = canvas.getContext("webgl2", { antialias: false, alpha: false }); if (gl) { glOK = initGL(); if (glOK) { root.classList.remove("no-gl"); const n = document.getElementById("fieldNote"); if (n) { n.hidden = true; n.textContent = ""; } photoReady = false; uploadPhoto(); } } }
+    const d = Math.min(devicePixelRatio || 1, 2);
+    if (glOK && (canvas.width !== Math.round(innerWidth * d) || canvas.height !== Math.round(innerHeight * d))) resize();
+    else if (innerWidth !== lastW) resize();
+    prev = performance.now();
+    sync();
+  }
+  document.addEventListener("visibilitychange", wake);
+  addEventListener("pageshow", wake);
+  addEventListener("focus", wake);
 
   primeOrbit();
   apply();
