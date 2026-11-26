@@ -59,14 +59,14 @@ const schema = noSchema ? null : study ? caseSchema(lang, study, hrefFor(lang), 
     <canvas id="field" aria-hidden="true"></canvas>
     <div class="page">
       <header class="bar">
-        <a class="mark" href={homePath[lang]} data-ink>
+        <a class="mark" href={homePath[lang]} aria-label={t.name} data-ink>
           <svg class="mark-orbit" viewBox="-15 -15 30 30" aria-hidden="true"><g transform="rotate(-18)"><ellipse cx="0" cy="0" rx="12" ry="6" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="1.2" /><circle cx="5.04" r="3.2" fill="currentColor" fill-opacity=".85" /><circle id="mkDot" cx="12" r="2.6" fill="var(--accent)" /></g></svg>
           <span class="mark-name">{t.name}</span>
         </a>
         <div class="bar-end">
           <nav class="chip langs" aria-label={t.langLabel}>
             {langs.map((l) => (
-              <a href={hrefFor(l)} hreflang={l} lang={l} title={languages[l]} aria-label={languages[l]} aria-current={l === lang ? "page" : undefined}>{l.toUpperCase()}</a>
+              <a href={hrefFor(l)} hreflang={l} lang={l} title={languages[l]} aria-label={`${l.toUpperCase()}, ${languages[l]}`} aria-current={l === lang ? "page" : undefined}>{l.toUpperCase()}</a>
             ))}
           </nav>
           <button type="button" class="chip" id="themeToggle" aria-pressed="false"><span class="disc" aria-hidden="true"></span><span id="themeLabel">{js.paper}</span></button>
