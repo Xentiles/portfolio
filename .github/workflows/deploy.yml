@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, so the sitemap's lastmod dates are real
       - uses: withastro/action@v3
         with:
           node-version: 22
@@ -32,3 +34,16 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+  # Tell Bing (and the other IndexNow engines) which pages exist, right after each deploy.
+  # The key file public/4a8e8f4ea3c0aca65a80975871121708.txt proves the site owns this key.
+  indexnow:
+    needs: deploy
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Ping IndexNow
+        run: |
+          urls=$(curl -fsS https://dominiknagy.dev/sitemap.xml | grep -o '<loc>[^<]*</loc>' | sed 's/<[^>]*>//g' | jq -R . | jq -sc .)
+          echo "$urls"
+          curl -fsS -X POST https://api.indexnow.org/indexnow -H 'Content-Type: application/json; charset=utf-8' \
+            -d "{\"host\":\"dominiknagy.dev\",\"key\":\"4a8e8f4ea3c0aca65a80975871121708\",\"keyLocation\":\"https://dominiknagy.dev/4a8e8f4ea3c0aca65a80975871121708.txt\",\"urlList\":$urls}" -w '%{http_code}\n'

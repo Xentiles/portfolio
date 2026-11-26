@@ -14,6 +14,8 @@ export type CaseStudy = {
   kind: string;
   title: string;
   lead: string;
+  // Search snippet: 140 to 160 characters, the most specific claim first. The lead stays on the page.
+  summary: string;
   notice?: string;
   sections: Section[];
   links?: [string, string][];
@@ -28,6 +30,7 @@ const en: CaseStudy[] = [
     kind: "Now at TakScan, confidential pilot",
     title: "AI-assisted building inspection",
     lead: "TakScan documents buildings with drones, detects damage and points out deviations with position, size and priority, so owners can act early and prevent bigger problems. I'm building the AI system that supports experts inspecting that aerial imagery. The AI assists and the expert decides.",
+    summary: "How I build AI that helps TakScan's experts inspect drone imagery of buildings: principles, organisation, quality. The AI assists, the expert decides.",
     notice: "This is a confidential pilot. What follows is how I work on it, not what is built. Further detail can be discussed in person where confidentiality allows.",
     sections: [
       { title: "The project", blocks: [{ type: "p", text: "The work covers the full chain, from handling sensitive imagery responsibly to the software experts use every day, and it is moving into a structured verification phase. I build it together with Alex Weibull at TakScan (Riventify AB)." }] },
@@ -72,6 +75,7 @@ const en: CaseStudy[] = [
     kind: "Local web app, v0.2.0",
     title: "Feedback Intelligence",
     lead: "Customer feedback piles up in reviews and comments faster than a team can read it, and an AI summary is hard to trust when you can't see why it says what it says. Feedback Intelligence classifies feedback and keeps every decision traceable to its evidence.",
+    summary: "Feedback Intelligence classifies customer feedback with rules or AI and keeps every decision traceable to its evidence. A case study by Dominik Nagy.",
     sections: [
       { title: "What I built", blocks: [{ type: "list", items: [
         "A local workbench that imports reviews and comments.",
@@ -93,6 +97,7 @@ const en: CaseStudy[] = [
     kind: "Native macOS app, beta",
     title: "NotchQ",
     lead: "When you work with AI coding tools, running out of allowance in the middle of a task breaks your flow, and checking how much is left means leaving what you're doing. NotchQ keeps it in view.",
+    summary: "NotchQ is a macOS app that shows how much of your AI coding tool allowance is left, right in the MacBook notch. A case study by Dominik Nagy.",
     sections: [
       { title: "What I built", blocks: [{ type: "list", items: [
         "A native Swift and AppKit utility that sits beside the Mac's camera notch.",
@@ -119,6 +124,7 @@ const sv: CaseStudy[] = [
     kind: "Just nu på TakScan, konfidentiellt pilotprojekt",
     title: "AI-stödd byggnadsinspektion",
     lead: "TakScan dokumenterar byggnader med drönare, upptäcker skador och pekar ut avvikelser med position, mått och prioritet, så att fastighetsägare kan agera i tid och förebygga större problem. Jag bygger AI-systemet som stöttar experter när de granskar flygbilderna. AI:n hjälper till och experten bestämmer.",
+    summary: "Hur jag bygger AI som hjälper TakScans experter att granska drönarbilder av byggnader: principer, arbetssätt, kvalitet. AI:n hjälper, experten bestämmer.",
     notice: "Det här är ett konfidentiellt pilotprojekt. Det som följer beskriver hur jag arbetar, inte vad som byggs. Mer kan berättas personligen där sekretessen tillåter.",
     sections: [
       { title: "Projektet", blocks: [{ type: "p", text: "Arbetet täcker hela kedjan, från ansvarsfull hantering av känsliga bilder till programvaran som experterna använder varje dag, och går nu in i en strukturerad verifieringsfas. Jag bygger det tillsammans med Alex Weibull på TakScan (Riventify AB)." }] },
@@ -163,6 +169,7 @@ const sv: CaseStudy[] = [
     kind: "Lokal webbapp, v0.2.0",
     title: "Feedback Intelligence",
     lead: "Kundfeedback samlas i recensioner och kommentarer snabbare än ett team hinner läsa, och en AI-sammanfattning är svår att lita på när man inte ser varför den säger det den säger. Feedback Intelligence klassificerar feedback och gör varje beslut spårbart till sitt underlag.",
+    summary: "Feedback Intelligence klassificerar kundfeedback med regler eller AI och gör varje beslut spårbart till sitt underlag. En fallstudie av Dominik Nagy.",
     sections: [
       { title: "Vad jag byggde", blocks: [{ type: "list", items: [
         "En lokal arbetsyta som importerar recensioner och kommentarer.",
@@ -184,6 +191,7 @@ const sv: CaseStudy[] = [
     kind: "Inbyggd macOS-app, beta",
     title: "NotchQ",
     lead: "När du arbetar med AI-kodverktyg bryts flödet om användningen tar slut mitt i en uppgift, och att kolla hur mycket som finns kvar betyder att du måste lämna det du gör. NotchQ håller det i synfältet.",
+    summary: "NotchQ är en macOS-app som visar hur mycket som finns kvar av dina AI-kodverktyg, direkt i MacBookens hack. En fallstudie av Dominik Nagy.",
     sections: [
       { title: "Vad jag byggde", blocks: [{ type: "list", items: [
         "Ett inbyggt verktyg i Swift och AppKit som sitter bredvid kamerahacket på din Mac.",
@@ -210,6 +218,7 @@ const hu: CaseStudy[] = [
     kind: "Most a TakScannél, bizalmas pilotprojekt",
     title: "MI-támogatott épületvizsgálat",
     lead: "A TakScan drónokkal dokumentálja az épületeket, felismeri a károkat, és helyzettel, mérettel és prioritással jelöli az eltéréseket, hogy a tulajdonosok időben léphessenek, és megelőzzék a nagyobb bajt. Én azt az MI-rendszert építem, amely a légi felvételeket vizsgáló szakértőket támogatja. Az MI segít, a szakértő dönt.",
+    summary: "Így építek MI-t, amely a TakScan szakértőit segíti az épületek drónfelvételeinek vizsgálatában: elvek, munkaszervezés, minőség. Az MI segít, a szakértő dönt.",
     notice: "Ez egy bizalmas pilotprojekt. Az alábbiak azt írják le, hogyan dolgozom rajta, nem azt, hogy mi épül. Személyesen, amennyire a titoktartás engedi, többet is elmondok.",
     sections: [
       { title: "A projekt", blocks: [{ type: "p", text: "A munka a teljes láncot lefedi, az érzékeny felvételek felelős kezelésétől a szakértők által naponta használt szoftverig, és most egy strukturált ellenőrzési szakaszba lép. Alex Weibull-lal együtt építem a TakScannél (Riventify AB)." }] },
@@ -254,6 +263,7 @@ const hu: CaseStudy[] = [
     kind: "Helyi webalkalmazás, v0.2.0",
     title: "Feedback Intelligence",
     lead: "Az ügyfélvisszajelzések gyorsabban gyűlnek az értékelésekben és hozzászólásokban, mint ahogy egy csapat el tudja olvasni őket, egy MI-összefoglalóban pedig nehéz megbízni, ha nem látod, miért mondja, amit mond. A Feedback Intelligence osztályozza a visszajelzéseket, és minden döntést visszavezethetővé tesz a bizonyítékáig.",
+    summary: "A Feedback Intelligence szabályokkal vagy MI-vel osztályozza a visszajelzéseket, és minden döntést a bizonyítékáig visszavezet. Nagy Dominik esettanulmánya.",
     sections: [
       { title: "Amit építettem", blocks: [{ type: "list", items: [
         "Helyi munkafelület, amely értékeléseket és hozzászólásokat importál.",
@@ -275,6 +285,7 @@ const hu: CaseStudy[] = [
     kind: "Natív macOS-alkalmazás, béta",
     title: "NotchQ",
     lead: "Ha MI-alapú kódolóeszközökkel dolgozol, és egy feladat közepén elfogy a keret, az megtöri a lendületet, és ha meg akarod nézni, mennyi maradt, ki kell lépned abból, amit csinálsz. A NotchQ szem előtt tartja.",
+    summary: "A NotchQ egy macOS-alkalmazás, amely a MacBook notch-ában mutatja, mennyi maradt az MI-kódolóeszközök keretéből. Nagy Dominik esettanulmánya.",
     sections: [
       { title: "Amit építettem", blocks: [{ type: "list", items: [
         "Natív Swift és AppKit segédprogram, amely a Mac kameranyílása mellett ül.",

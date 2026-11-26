@@ -19,6 +19,6 @@ const study = list[i];
 const nextStudy = list[(i + 1) % list.length];
 const paths = Object.fromEntries(langs.map((l) => [l, workSlugs[l][key]])) as Record<Lang, string>;
 ---
-<Base lang=hu paths={paths} title={study.title} description={study.lead}>
+<Base lang=hu paths={paths} title={study.title} description={study.summary} study={study}>
   <CaseStudy lang=hu study={study} back={homePath[lang] + "#work"} next={{ title: nextStudy.title, href: workSlugs[lang][nextStudy.key] }} />
 </Base>
