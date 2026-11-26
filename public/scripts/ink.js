@@ -161,7 +161,11 @@
   const og = orbit.getContext("2d");
   orbit.addEventListener("contextrestored", () => { try { sizeOrbit(); drawOrbit(); } catch (e) {} });
   const ORB = { cx: 290, cy: 165, a: 150, e: 0.42, tilt: -0.32, period: 13 };
-  ORB.b = ORB.a * Math.sqrt(1 - ORB.e * ORB.e) * 0.62; // flattened to read as a tilted orbit
+  // Flattening reads as inclination. As the hero scrolls away the orbit turns toward edge-on, as if you
+  // move past it, and opens again on the way back: scroll moves the one camera all depth shares.
+  const ORB_B0 = ORB.a * Math.sqrt(1 - ORB.e * ORB.e);
+  let flat = 0.62, flatTarget = 0.62;
+  ORB.b = ORB_B0 * flat;
   const trail = [];
   let orbitT = 3.2;
   function keplerPos(t) {
@@ -241,6 +245,11 @@
         runs(trail, s0, s1, front);
       }
       og.globalAlpha = 1;
+      if (front && p) {
+        const r = orbit.getBoundingClientRect();
+        dotPt.x = r.left + p.x * r.width / 460; dotPt.y = r.top + p.y * r.height / 320;
+        dotPt.on = r.bottom > 0 && r.top < innerHeight && !touch ? 1 : 0;
+      }
       if (p && (p.z >= 0) === front) { const zf = Math.min(Math.max((p.z + 0.35) / 0.7, 0), 1); og.beginPath(); og.arc(p.x, p.y, 3.6 + 1.6 * zf, 0, Math.PI * 2); og.fillStyle = accent; og.globalAlpha = 0.55 + 0.45 * zf; og.fill(); og.globalAlpha = 1; }
     }
     layer(false);
@@ -257,6 +266,10 @@
     layer(true);
   }
   function stepOrbit(dt) {
+    const hero = portraitEl.closest(".hero");
+    if (hero && !reduce) { const r = hero.getBoundingClientRect(); const prog = Math.min(1, Math.max(0, -r.top / (r.height * 0.9))); flatTarget = 0.62 + (0.12 - 0.62) * prog; }
+    flat += (flatTarget - flat) * (1 - Math.exp(-dt * 6));
+    ORB.b = ORB_B0 * flat;
     orbitT += dt;
     // Sample densely so the trail stays smooth at perihelion speed.
     const sub = 4;
@@ -304,7 +317,7 @@ precision highp float; precision highp int;
 out vec4 color;
 uniform vec2 resolution; uniform vec2 cssSize; uniform float time; uniform float intensity;
 uniform int mode; uniform float cell; uniform vec3 base; uniform vec3 capsule; uniform vec3 ink; uniform vec3 wall;
-uniform vec3 touch[8];                         // cursor and its fading wake: x, y in CSS px, strength
+uniform vec4 touch[10];                        // x, y in CSS px, strength, reach: cursor, wake, resting memory, orbit dot
 uniform sampler2D photo; uniform vec4 pRect; uniform float pReveal; uniform vec3 tone0; uniform vec3 tone1;
 float hash(vec2 p){ p=mod(p,289.); return fract((p.x*34.+1.)*p.x/289.+(p.y*71.+1.)*p.y/293.); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
@@ -353,10 +366,10 @@ void main(){
   float n=smoothstep(-9.,13.,intensity*d0);
   // The cursor behaves like an electrode: nearby capsules draw ink up and pool it toward the cursor.
   vec2 pull=vec2(0.); float lift=0.;
-  for(int i=0;i<8;i++){
-    vec3 tp=touch[i]; if(tp.z<.002) continue;
+  for(int i=0;i<10;i++){
+    vec4 tp=touch[i]; if(tp.z<.002) continue;
     vec2 dv=tp.xy-center; float d2=dot(dv,dv);
-    float w=tp.z*exp(-d2/(2.*40.*40.));   // reach halved after review: a small, quiet electrode
+    float w=tp.z*exp(-d2/(2.*tp.w*tp.w));   // each point carries its own reach (cursor 20 px since study 04)
     lift+=w; pull+=dv/(sqrt(d2)+1.)*w;
   }
   n=clamp(n+lift*.45,0.,1.);
@@ -502,7 +515,7 @@ void main(){
     gl.uniform1i(U.mode, 1);
     gl.uniform1f(U.cell, innerWidth < 720 ? 7 : 7.5);
     gl.uniform3f(U.capsule, ...f.capsule); gl.uniform3f(U.ink, ...f.ink); gl.uniform3f(U.wall, ...f.wall);
-    gl.uniform3fv(U.touch, touchBuf);
+    gl.uniform4fv(U.touch, touchBuf);
     gl.uniform3f(U.tone0, ...f.tone0); gl.uniform3f(U.tone1, ...f.tone1);
     const pr = portraitEl.getBoundingClientRect();
     gl.uniform4f(U.pRect, pr.left, pr.top, pr.width, pr.height);
@@ -528,9 +541,15 @@ void main(){
 
   /* ---------- Cursor: electrode for the ink field, light and lean for the UI ---------- */
   const finePointer = matchMedia("(hover: hover) and (pointer: fine)").matches && !reduce;
-  const touchBuf = new Float32Array(24);
-  const ptr = { tx: -9999, ty: -9999, x: -9999, y: -9999, vx: 0, vy: 0, presence: 0, inside: false, wake: [], lastSample: 0 };
+  const touchBuf = new Float32Array(40);
+  // Reach of each kind of point, in CSS px. Halved again after study 04: a small, quiet electrode.
+  const REACH = { cursor: 20, wake: 20, memory: 22, dot: 11 };
+  const ptr = { tx: -9999, ty: -9999, x: -9999, y: -9999, vx: 0, vy: 0, presence: 0, inside: false, wake: [], lastSample: 0, rest: null, restT: 0 };
+  const dotPt = { x: -9999, y: -9999, on: 0 };
   function stepPointer(dt, now) {
+    touchBuf.fill(0);
+    // The orbit dot is a second, weaker hand in the field: capsules deepen in its wake and settle back.
+    if (dotPt.on > 0) { touchBuf[36] = dotPt.x; touchBuf[37] = dotPt.y; touchBuf[38] = 0.45 * dotPt.on; touchBuf[39] = REACH.dot; }
     if (!finePointer) return;
     // Spring-follow the real cursor so the ink lags a little behind it, with weight.
     const k = 120, d = 18;
@@ -547,22 +566,31 @@ void main(){
       ptr.wake.unshift({ x: ptr.x, y: ptr.y, t: now, s: Math.min(0.25 + speed / 1400, 0.85) });
       ptr.wake.length = Math.min(ptr.wake.length, 7); ptr.lastSample = now;
     }
-    touchBuf.fill(0);
-    touchBuf[0] = ptr.x; touchBuf[1] = ptr.y; touchBuf[2] = 0.8 * ptr.presence;
+    // Where the cursor rests, the ink stays a shade deeper for a few seconds after it leaves.
+    if (ptr.inside && speed < 25) { if (!ptr.rest || Math.hypot(ptr.rest.x - ptr.x, ptr.rest.y - ptr.y) > 12) ptr.rest = { x: ptr.x, y: ptr.y, s: 0 }; ptr.rest.s = Math.min(ptr.rest.s + dt / 1.2, 1); ptr.restT = now; }
+    touchBuf[0] = ptr.x; touchBuf[1] = ptr.y; touchBuf[2] = 0.8 * ptr.presence; touchBuf[3] = REACH.cursor;
     ptr.wake.forEach((w, i) => {
       const age = (now - w.t) / 1000;
-      touchBuf[3 + i * 3] = w.x; touchBuf[4 + i * 3] = w.y; touchBuf[5 + i * 3] = w.s * Math.exp(-age / 0.7);
+      touchBuf[4 + i * 4] = w.x; touchBuf[5 + i * 4] = w.y; touchBuf[6 + i * 4] = w.s * Math.exp(-age / 0.7); touchBuf[7 + i * 4] = REACH.wake;
     });
+    if (ptr.rest) {
+      const s = 0.32 * ptr.rest.s * Math.exp(-(now - ptr.restT) / 2600);
+      if (s < 0.004) ptr.rest = null; else { touchBuf[32] = ptr.rest.x; touchBuf[33] = ptr.rest.y; touchBuf[34] = s; touchBuf[35] = REACH.memory; }
+    }
   }
   // Parallax: cursor offset from the viewport centre, eased with a soft follow; scroll lag for the portrait.
-  const plx = { x: 0, y: 0, sy: 0, set: "" };
+  const plx = { x: 0, y: 0, sy: 0, set: "", settle: 0, settleV: 0, lastY: scrollY };
+  // When scrolling stops, the portrait plane settles a few pixels on the spring with a small overshoot.
+  addEventListener("scroll", () => { const y = scrollY; if (!touch && !reduce && !paused) plx.settleV += (y - plx.lastY) * 0.35; plx.lastY = y; }, { passive: true });
   function stepParallax(dt) {
     if (reduce) return;
     let tx = 0, ty = 0;
     if (finePointer && ptr.inside && ptr.tx > -9000) { tx = (ptr.tx / innerWidth - 0.5) * 2; ty = (ptr.ty / innerHeight - 0.5) * 2; }
     const f = Math.min(dt * 3, 1);
     plx.x += (tx - plx.x) * f; plx.y += (ty - plx.y) * f;
-    plx.sy = touch ? 0 : Math.min(scrollY, innerHeight) * 0.12;
+    for (let left = dt; left > 0; left -= 1 / 240) { const h = Math.min(left, 1 / 240); plx.settleV += (-170 * plx.settle - 15 * plx.settleV) * h; plx.settle += plx.settleV * h; }
+    plx.settle = Math.max(-14, Math.min(14, plx.settle));
+    plx.sy = touch ? 0 : Math.min(scrollY, innerHeight) * 0.12 - plx.settle;
     const key = plx.x.toFixed(3) + plx.y.toFixed(3) + plx.sy.toFixed(1);
     if (key === plx.set) return; plx.set = key;
     root.style.setProperty("--plx", plx.x.toFixed(3)); root.style.setProperty("--ply", plx.y.toFixed(3)); root.style.setProperty("--sy", plx.sy.toFixed(1));
@@ -616,7 +644,21 @@ void main(){
   // Keep the field sharp when the window changes size (rotation, desktop resizing). Height-only changes
   // on touch screens are the address bar sliding, which is ignored so the field never flickers.
   { let q = 0; addEventListener("resize", e => { cancelAnimationFrame(q); q = requestAnimationFrame(() => { try { resize(e); } catch (err) { reportError(err); } }); }); }
-  toggle.addEventListener("click", () => { state.mode = state.mode === "paper" ? "charcoal" : "paper"; glideField(); root.dataset.mode = state.mode; sync(); save(); drawOrbit(); });
+  // Eclipse: the new theme spreads out from wherever the orbit dot is (or from the toggle when the dot is
+  // off screen), on orbital timing. Without View Transitions it falls back to the 700 ms glide.
+  toggle.addEventListener("click", () => {
+    const next = state.mode === "paper" ? "charcoal" : "paper";
+    const flip = () => { state.mode = next; root.dataset.mode = next; sync(); save(); };
+    if (!document.startViewTransition || reduce) { state.mode = next; glideField(); root.dataset.mode = next; sync(); save(); drawOrbit(); return; }
+    let cx, cy;
+    if (dotPt.on && dotPt.y > 0 && dotPt.y < innerHeight) { cx = dotPt.x; cy = dotPt.y; }
+    else { const b = toggle.getBoundingClientRect(); cx = b.left + b.width / 2; cy = b.top + b.height / 2; }
+    const rad = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
+    root.classList.add("eclipsing");
+    const vt = document.startViewTransition(() => { flip(); fieldCol = targetField(); fieldTo = null; draw(); safely(drawOrbit); });
+    vt.ready.then(() => root.animate({ clipPath: [`circle(0px at ${cx}px ${cy}px)`, `circle(${rad}px at ${cx}px ${cy}px)`] }, { duration: 760, easing: "cubic-bezier(.65, 0, .35, 1)", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
+    vt.finished.finally(() => root.classList.remove("eclipsing"));
+  });
   pauseBtn.addEventListener("click", () => { paused = !paused; sync(); });
 
   primeOrbit();
@@ -628,3 +670,13 @@ void main(){
   // Show the frosted band only once the page has scrolled under the bar.
   { const bar = document.querySelector(".bar"); const onScroll = () => bar.classList.toggle("stuck", scrollY > 8);
     addEventListener("scroll", onScroll, { passive: true }); onScroll(); }
+
+  // The name mark keeps orbiting: its dot sits at your reading position on Kepler timing, so the
+  // signature stays with you after the hero. It moves only when you scroll.
+  { const dot = document.getElementById("mkDot");
+    if (dot) {
+      const kepler = M => { let E = M; for (let i = 0; i < 6; i++) E -= (E - 0.42 * Math.sin(E) - M) / (1 - 0.42 * Math.cos(E)); return E; };
+      const onScroll = () => { const max = Math.max(1, document.documentElement.scrollHeight - innerHeight); const p = Math.min(1, Math.max(0, scrollY / max)); const E = kepler(p * Math.PI * 2);
+        dot.setAttribute("cx", (12 * Math.cos(E)).toFixed(2)); dot.setAttribute("cy", (6 * Math.sin(E)).toFixed(2)); };
+      addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", onScroll); onScroll();
+    } }
