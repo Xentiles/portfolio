@@ -605,7 +605,7 @@ void main(){
   function clearTilt() { if (!tiltEl) return; tiltEl.classList.remove("hovering", "tracking"); tiltEl.style.removeProperty("--rx"); tiltEl.style.removeProperty("--ry"); tiltEl = null; }
   function clearMagnet() { if (!magnetEl) return; magnetEl.classList.remove("tracking"); magnetEl.style.setProperty("--tx", "0px"); magnetEl.style.setProperty("--ty", "0px"); magnetEl = null; }
   if (finePointer) {
-    document.querySelectorAll(".chip, .tab").forEach(el => el.classList.add("magnet"));
+    document.querySelectorAll(".chip, .tab, .hub > a, .hub > button").forEach(el => el.classList.add("magnet"));
     addEventListener("pointermove", e => {
       if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
       ptr.tx = e.clientX; ptr.ty = e.clientY; ptr.inside = true;
@@ -625,7 +625,8 @@ void main(){
       if (m) {
         const r = m.getBoundingClientRect();
         const dx = (e.clientX - (r.left + r.width / 2)) / r.width, dy = (e.clientY - (r.top + r.height / 2)) / r.height;
-        m.style.setProperty("--tx", (dx * 3).toFixed(1) + "px"); m.style.setProperty("--ty", (dy * 2).toFixed(1) + "px");
+        const big = m.parentElement && m.parentElement.classList.contains("hub"); // tiles follow the cursor a little further than chips
+        m.style.setProperty("--tx", (dx * (big ? 5 : 3)).toFixed(1) + "px"); m.style.setProperty("--ty", (dy * (big ? 3 : 2)).toFixed(1) + "px");
       }
     }, { passive: true });
     document.documentElement.addEventListener("pointerleave", () => { ptr.inside = false; clearTilt(); clearMagnet(); });

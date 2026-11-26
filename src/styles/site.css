@@ -28,6 +28,9 @@
   --on-ink: var(--charcoal-raised);
   --accent: var(--leaf);
   --tex-opacity: 0.07;
+  --shadow-near: rgba(0, 0, 0, .18);
+  --surface-lift: color-mix(in srgb, var(--charcoal-raised) 92%, var(--paper) 8%); /* a raised tile catches a little more light */
+  --shadow-far: rgba(8, 5, 3, .75);
 
   --font-display: "Libron", Georgia, serif;
   --font-body: "Libron", Georgia, serif;
@@ -49,6 +52,9 @@
   --on-ink: var(--birch);
   --accent: var(--leaf-deep);
   --tex-opacity: 0.10;
+  --shadow-near: rgba(90, 62, 43, .10);
+  --surface-lift: color-mix(in srgb, var(--birch) 55%, #fff 45%);
+  --shadow-far: rgba(70, 45, 28, .38);
 }
 
 * { box-sizing: border-box; }
@@ -133,31 +139,24 @@ body {
   background: var(--surface); color: var(--ink);
   border: 1px solid var(--ink-soft); border-radius: 6px;
   text-decoration: none; text-align: left; font: inherit; cursor: pointer;
-  transform: translateY(var(--lift, 0px));
-  transition: transform 900ms var(--settle), border-color 700ms ease;
+  /* The tile is a body in front of the field. On hover it rises toward the camera, leans a little after
+     the cursor and casts a deeper contact shadow; the surface stays solid so it never melts into the ink. */
+  transform: translate(var(--tx, 0px), calc(var(--ty, 0px) + var(--lift, 0px)));
+  box-shadow: 0 1px 0 var(--shadow-near), 0 2px 6px -4px var(--shadow-far);
+  transition: transform 900ms var(--settle), border-color 500ms ease, box-shadow 700ms var(--settle), background-color 500ms ease;
 }
-.hub a:hover, .hub button:hover { --lift: -1px; border-color: color-mix(in srgb, var(--ink) 38%, transparent); }
+.hub a:hover, .hub button:hover, .hub .on { --lift: -4px; border-color: color-mix(in srgb, var(--ink) 42%, transparent);
+  background: var(--surface-lift);
+  box-shadow: 0 1px 0 var(--shadow-near), 0 14px 26px -14px var(--shadow-far);
+  transition: transform 700ms var(--spring), border-color 300ms ease, box-shadow 600ms var(--settle), background-color 300ms ease; }
+.hub .magnet.tracking { transition: transform 420ms var(--settle), border-color 300ms ease, box-shadow 600ms var(--settle), background-color 300ms ease !important; }
 .hub .label { font: 700 18px/24px var(--font-display); }
 .hub .meta { font: 400 12px/18px var(--font-mono); letter-spacing: 0.04em; overflow-wrap: anywhere; }
 .hub .arrow { position: absolute; right: 14px; top: 14px; font: 400 14px/1 var(--font-ui); transition: transform 900ms var(--settle); }
 .hub a:hover .arrow, .hub button:hover .arrow { transform: translate(3px, -3px); }
-/* Ink ripple: the tile's capsules take up ink in a soft wave that spreads from where the pointer
-   enters, like the field's slow fluid, and sink back toward where it leaves. No light, no overshoot:
-   it develops in 1.8 s and drains in 1.6 s, so a quick pass of the mouse leaves only a faint swell. */
-@property --wave { syntax: "<length>"; inherits: false; initial-value: 0px; }
-.hub .fill {
-  position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background:
-    radial-gradient(circle, color-mix(in srgb, var(--wood) 80%, var(--ink) 20%) 0 2.1px, transparent 2.6px) 0 0 / 7.5px 15px,
-    radial-gradient(circle, color-mix(in srgb, var(--wood) 80%, var(--ink) 20%) 0 2.1px, transparent 2.6px) 3.75px 7.5px / 7.5px 15px,
-    color-mix(in srgb, var(--surface) 55%, var(--wood) 45%);
-  -webkit-mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 calc(var(--wave) - 90px), rgba(0,0,0,.5) calc(var(--wave) - 48px), rgba(0,0,0,.75) calc(var(--wave) - 22px), transparent var(--wave));
-  mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 calc(var(--wave) - 90px), rgba(0,0,0,.5) calc(var(--wave) - 48px), rgba(0,0,0,.75) calc(var(--wave) - 22px), transparent var(--wave));
-  transition: --wave 1600ms cubic-bezier(.45, 0, .55, 1);
-}
-.hub .on .fill, .hub .on > .fill { --wave: 400px; transition: --wave 1800ms cubic-bezier(.3, .55, .4, 1); }
+.hub .fill { display: none; }
 /* Pressing has mass: the tile sinks to 98% and springs back, never from or to zero. */
-.hub a:active, .hub button:active { transform: scale(.98); transition: transform 80ms ease-out, border-color 700ms ease !important; }
+.hub a:active, .hub button:active { transform: translate(var(--tx, 0px), calc(var(--ty, 0px) - 1px)) scale(.98); box-shadow: 0 1px 0 var(--shadow-near), 0 4px 8px -6px var(--shadow-far); transition: transform 80ms ease-out, box-shadow 80ms ease-out !important; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 /* Story */
