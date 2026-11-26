@@ -317,7 +317,11 @@
   });
   const VERT = `#version 300 es
 in vec2 a; void main(){ gl_Position=vec4(a,0.,1.); }`;
-  const FRAG = `#version 300 es
+  // The fragment shader in pieces. FRAG (one pass) is the original text exactly. Where the GPU can render to
+  // float textures, the same per-capsule maths (dunes, flow, cursor pull) runs once per capsule into a small
+  // texture (CELL_FRAG) and the per-pixel pass (PIX_FRAG) reads it back, so each capsule's numbers are worked
+  // out once instead of for every one of its ~60-200 screen pixels. Same formulas, same inputs, same picture.
+  const FRAG_HEAD = `#version 300 es
 precision highp float; precision highp int;
 out vec4 color;
 uniform vec2 resolution; uniform vec2 cssSize; uniform float time; uniform float intensity;
@@ -349,7 +353,8 @@ float fineAt(vec2 pixel, float t){
   vec2 q3=vec2(q.x*12./13.+q.y*5./13.,-q.x*5./13.+q.y*12./13.)*2.27+71.;
   return (grainNoise(q,11u)+grainNoise(q2,137u)+grainNoise(q3,719u)-1.5)*9.;
 }
-void main(){
+`;
+  const FRAG_PIX_A = `void main(){
   vec2 frag=vec2(gl_FragCoord.x, resolution.y-gl_FragCoord.y);
   vec2 pixel=frag/resolution*cssSize;
   float t=time;
@@ -363,7 +368,8 @@ void main(){
   vec2 cid=floor(sp/cell);
   vec2 local=(fract(sp/cell)-.5);            // -0.5..0.5 inside this capsule
   vec2 center=(cid+.5)*cell; center.x-=mod(row,2.)*.5*cell;
-  // How much ink this capsule holds, and which way the fluid is pushing it.
+`;
+  const FRAG_CELL_MATH = `  // How much ink this capsule holds, and which way the fluid is pushing it.
   float d0=dunesAt(center,t);
   float gx=dunesAt(center+vec2(cell,0.),t)-dunesAt(center-vec2(cell,0.),t);
   float gy=dunesAt(center+vec2(0.,cell),t)-dunesAt(center-vec2(0.,cell),t);
@@ -380,7 +386,8 @@ void main(){
   n=clamp(n+lift*.45,0.,1.);
   float charge=min(lift,1.);
   vec2 mixed=flow*(1.-min(lift,1.)*.6)+pull*1.; float ml=length(mixed); flow=ml>1e-4?mixed/ml:flow;
-  float ph=grainHash(cid+3.,29u)*6.2831;
+`;
+  const FRAG_PIX_B = `  float ph=grainHash(cid+3.,29u)*6.2831;
   float wob=sin(t*1.7+ph)*.03;                 // each capsule breathes a little on its own clock
   float wallR=.46;
   float r=wallR*sqrt(clamp(n+wob,0.,1.));
@@ -431,19 +438,60 @@ void main(){
   col+=tooth;
   color=vec4(col,1.);
 }`;
-  let U = {}, elapsed = 0, lastDraw = -1e9;
+  const FRAG = FRAG_HEAD + FRAG_PIX_A + FRAG_CELL_MATH + FRAG_PIX_B;
+  const CELL_FRAG = FRAG_HEAD + `void main(){
+  vec2 cid=floor(gl_FragCoord.xy); float row=cid.y; float t=time;
+  vec2 center=(cid+.5)*cell; center.x-=mod(row,2.)*.5*cell;
+` + FRAG_CELL_MATH + `  color=vec4(n,flow,charge);
+}`;
+  const PIX_FRAG = FRAG_HEAD.replace("uniform sampler2D photo;", "uniform highp sampler2D cells; uniform sampler2D photo;") + FRAG_PIX_A
+    + `  vec4 cs=texelFetch(cells,ivec2(cid),0); float n=cs.x; vec2 flow=cs.yz; float charge=cs.w;
+` + FRAG_PIX_B;
+  let U = {}, UC = {}, elapsed = 0, lastDraw = -1e9;
+  // Two-pass state: the per-capsule program, its float texture and framebuffer, and the texture's size.
+  let progC = null, progP = null, cellTex = null, cellFB = null, cellW = 0, cellH = 0;
   function compile(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+  function link(fs) {
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT)); gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+    gl.bindAttribLocation(prog, 0, "a");
+    gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    return prog;
+  }
+  // Two passes need float render targets (WebGL 2 with EXT_color_buffer_float, nearly every GPU). Without
+  // them, or if anything about the two-pass setup fails, the original single pass draws the same field.
+  // Review builds only: ?field=1 forces the single pass, for side-by-side checks.
+  function initTwoPass() {
+    if (/[?&]field=1(&|$)/.test(location.search) && !/(^|\.)dominiknagy\.dev$/.test(location.hostname)) return false;
+    if (!gl.getExtension("EXT_color_buffer_float")) return false;
+    try {
+      const c = link(CELL_FRAG), p = link(PIX_FRAG);
+      const tex = gl.createTexture(); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 1, 1, 0, gl.RGBA, gl.FLOAT, null);
+      const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+      const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.activeTexture(gl.TEXTURE0);
+      if (!ok) return false;
+      progC = c; progP = p; cellTex = tex; cellFB = fb; cellW = cellH = 1;
+      ["time", "intensity", "cell"].forEach(n => UC[n] = gl.getUniformLocation(c, n));
+      UC.touch = gl.getUniformLocation(c, "touch[0]");
+      return true;
+    } catch (e) { gl.activeTexture(gl.TEXTURE0); gl.bindFramebuffer(gl.FRAMEBUFFER, null); return false; }
+  }
   function initGL() {
     if (!gl) return false;
     try {
-      const prog = gl.createProgram();
-      gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT)); gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
-      gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+      progC = null; cellTex = null; cellFB = null;
+      const prog = initTwoPass() ? progP : (progP = link(FRAG));
       gl.useProgram(prog);
       const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-      const loc = gl.getAttribLocation(prog, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-      ["resolution", "cssSize", "time", "intensity", "mode", "cell", "base", "capsule", "ink", "wall", "photo", "pRect", "pReveal", "tone0", "tone1"].forEach(n => U[n] = gl.getUniformLocation(prog, n));
+      gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      U = {};
+      ["resolution", "cssSize", "time", "intensity", "mode", "cell", "base", "capsule", "ink", "wall", "photo", "pRect", "pReveal", "tone0", "tone1", "cells"].forEach(n => U[n] = gl.getUniformLocation(prog, n));
       U.touch = gl.getUniformLocation(prog, "touch[0]");
       return true;
     } catch (e) { fieldFail(String(e && e.message || e).slice(0, 300)); return false; }
@@ -513,12 +561,28 @@ void main(){
   }
   function drawField() {
     const f = currentField(performance.now());
+    const cell = innerWidth < 720 ? 7 : 7.5;
+    if (progC) {
+      // Pass 1: one texel per capsule. Columns cover the half-cell shift of odd rows, rows the full height.
+      const w = Math.floor(innerWidth / cell) + 2, h = Math.floor(innerHeight / cell) + 2;
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, cellTex);
+      if (w !== cellW || h !== cellH) { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, w, h, 0, gl.RGBA, gl.FLOAT, null); cellW = w; cellH = h; }
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, cellFB); gl.viewport(0, 0, w, h);
+      gl.useProgram(progC);
+      gl.uniform1f(UC.time, elapsed); gl.uniform1f(UC.intensity, 1.25); gl.uniform1f(UC.cell, cell);
+      gl.uniform4fv(UC.touch, touchBuf);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.useProgram(progP);
+      gl.uniform1i(U.cells, 1);
+    }
     gl.uniform2f(U.resolution, canvas.width, canvas.height);
     gl.uniform2f(U.cssSize, innerWidth, innerHeight);
     gl.uniform1f(U.time, elapsed);
     gl.uniform1f(U.intensity, 1.25);
     gl.uniform1i(U.mode, 1);
-    gl.uniform1f(U.cell, innerWidth < 720 ? 7 : 7.5);
+    gl.uniform1f(U.cell, cell);
     gl.uniform3f(U.capsule, ...f.capsule); gl.uniform3f(U.ink, ...f.ink); gl.uniform3f(U.wall, ...f.wall);
     gl.uniform4fv(U.touch, touchBuf);
     gl.uniform3f(U.tone0, ...f.tone0); gl.uniform3f(U.tone1, ...f.tone1);
