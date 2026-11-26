@@ -70,6 +70,7 @@ body {
 }
 #field { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; display: block; }
 .no-gl #field { display: none; }
+#sky { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; display: block; }
 /* If the ink field cannot run, a still capsule pattern keeps the page in character. */
 .no-gl body { background-image: radial-gradient(circle, var(--ink-wash) 0 2.4px, transparent 2.9px); background-size: 7.5px 7.5px; }
 .field-note { font: 400 12px/18px var(--font-mono); color: var(--accent); margin: 8px 0 0; }

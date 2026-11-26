@@ -317,7 +317,7 @@ precision highp float; precision highp int;
 out vec4 color;
 uniform vec2 resolution; uniform vec2 cssSize; uniform float time; uniform float intensity;
 uniform int mode; uniform float cell; uniform vec3 base; uniform vec3 capsule; uniform vec3 ink; uniform vec3 wall;
-uniform vec4 touch[14];                        // x, y in CSS px, strength, reach: cursor, wake, resting memory, moon and its tide
+uniform vec4 touch[18];                        // x, y in CSS px, strength, reach: cursor, wake, resting memory, moon and its tide, meteor and its trail
 uniform sampler2D photo; uniform vec4 pRect; uniform float pReveal; uniform vec3 tone0; uniform vec3 tone1;
 float hash(vec2 p){ p=mod(p,289.); return fract((p.x*34.+1.)*p.x/289.+(p.y*71.+1.)*p.y/293.); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
@@ -366,7 +366,7 @@ void main(){
   float n=smoothstep(-9.,13.,intensity*d0);
   // The cursor behaves like an electrode: nearby capsules draw ink up and pool it toward the cursor.
   vec2 pull=vec2(0.); float lift=0.;
-  for(int i=0;i<14;i++){
+  for(int i=0;i<18;i++){
     vec4 tp=touch[i]; if(tp.z<.002) continue;
     vec2 dv=tp.xy-center; float d2=dot(dv,dv);
     float w=tp.z*exp(-d2/(2.*tp.w*tp.w));   // each point carries its own reach (cursor 25 px, moon 17 px)
@@ -491,7 +491,7 @@ void main(){
       gl.viewport(0, 0, canvas.width, canvas.height);
       draw();
     }
-    sizeOrbit(); drawOrbit();
+    sizeOrbit(); drawOrbit(); sizeSky();
   }
   let drawCount = 0;
   function draw() {
@@ -534,6 +534,7 @@ void main(){
       elapsed += dt * 0.85;
       safely(stepOrbit, dt);
       safely(stepPointer, dt, now);
+      safely(stepMeteors, dt, now);
       safely(stepParallax, dt);
       if (now - lastDraw >= 1000 / fps - 1) { lastDraw = now; draw(); safely(drawOrbit); }
     } else if (fieldTo) { draw(); safely(drawOrbit); }
@@ -541,7 +542,7 @@ void main(){
 
   /* ---------- Cursor: electrode for the ink field, light and lean for the UI ---------- */
   const finePointer = matchMedia("(hover: hover) and (pointer: fine)").matches && !reduce;
-  const touchBuf = new Float32Array(56);
+  const touchBuf = new Float32Array(72);
   // Reach of each kind of point, in CSS px. Study 04 halved them; Dominik then asked for the cursor +25%
   // and the moon +50%. The tide is wider and softer than the moon itself.
   const REACH = { cursor: 25, wake: 25, memory: 27, dot: 17, tide: 24 };
@@ -584,6 +585,99 @@ void main(){
       if (s < 0.004) ptr.rest = null; else { touchBuf[32] = ptr.rest.x; touchBuf[33] = ptr.rest.y; touchBuf[34] = s; touchBuf[35] = REACH.memory; }
     }
   }
+
+  /* ---------- Meteors: rare, small, far away ----------
+     A meteor crosses the sky between the ink field and the page, so it never covers text. It lives on a deep
+     plane that scrolls at 15% of the page, lifts the capsules it passes over, and burns out in a few embers.
+     Calm randomness: every meteor falls (never climbs), at a shallow 14–32° slope, left-to-right or right-to-left,
+     starting somewhere in the upper half of the view. Only one at a time, about once a minute or two. */
+  const sky = document.createElement("canvas"); sky.id = "sky"; sky.setAttribute("aria-hidden", "true");
+  (canvas.nextSibling ? canvas.parentNode.insertBefore(sky, canvas.nextSibling) : canvas.parentNode.appendChild(sky));
+  const sg = sky.getContext("2d");
+  const DEPTH = 0.15;                       // the meteor plane scrolls at 15% of the page: far in the distance
+  let meteor = null, embers = [], skyDirty = false, skyDpr = 1;
+  let nextMeteor = performance.now() + 9000 + Math.random() * 6000;
+  const mtrail = []; let mtrailT = 0;
+  function sizeSky() {
+    skyDpr = Math.min(devicePixelRatio || 1, 2);
+    sky.width = Math.round(innerWidth * skyDpr); sky.height = Math.round(innerHeight * skyDpr);
+    sg.setTransform(skyDpr, 0, 0, skyDpr, 0, 0); skyDirty = true;
+  }
+  sizeSky();
+  function clearMeteors() { meteor = null; embers = []; mtrail.length = 0; sg.clearRect(0, 0, innerWidth, innerHeight); nextMeteor = performance.now() + 20000 + Math.random() * 40000; }
+  function spawnMeteor(now) {
+    const W = innerWidth, H = innerHeight, scale = Math.min(1, Math.max(0.6, W / 1100));
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    const ang = (14 + Math.random() * 18) * Math.PI / 180;
+    const len = (300 + Math.random() * 260) * scale;
+    // Start where the whole path stays on screen: the far side of the view from where it is heading.
+    const x0 = dir > 0 ? W * (0.06 + Math.random() * 0.45) : W * (0.49 + Math.random() * 0.45);
+    const y0 = H * (0.06 + Math.random() * 0.4);
+    const hx = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+    const a3 = hx(css("--accent")), i3 = hx(css("--ink"));
+    // Paler than the moon (pulled halfway toward the page ink), so the moon keeps the only full-strength orange.
+    const col = a3.map((v, i) => Math.round(v + (i3[i] - v) * 0.5));
+    meteor = { t0: now, dur: 1500 + Math.random() * 700, x0, y0, s0: scrollY, len, dx: Math.cos(ang) * dir, dy: Math.sin(ang), col, hist: [], burst: false };
+  }
+  const smooth = (a, b, x) => { const t = Math.min(Math.max((x - a) / (b - a), 0), 1); return t * t * (3 - 2 * t); };
+  function meteorAt(m, t) {
+    // Eases out: fast as it enters the air, slowing as it burns up. A slight sag gives it weight.
+    const s = 1 - Math.pow(1 - t, 1.8), sag = 0.05 * m.len * t * t;
+    const shift = -(scrollY - m.s0) * DEPTH + plx.x * -4;
+    return { x: m.x0 + m.dx * m.len * s, y: m.y0 + m.dy * m.len * s + sag + shift };
+  }
+  function stepMeteors(dt, now) {
+    if (reduce) return;
+    if (!meteor && now > nextMeteor && !document.hidden) spawnMeteor(now);
+    const drawing = meteor || embers.length || skyDirty;
+    if (drawing) { sg.clearRect(0, 0, innerWidth, innerHeight); skyDirty = false; }
+    let head = null, env = 0;
+    if (meteor) {
+      const m = meteor, t = (now - m.t0) / m.dur;
+      if (t >= 1) { meteor = null; nextMeteor = now + 55000 + Math.random() * 65000; }
+      else {
+        head = meteorAt(m, t);
+        // Fades in, brightens, flares once just before it burns out, then is gone.
+        env = smooth(0, 0.18, t) * (1 - smooth(0.78, 1, t)) + 0.55 * Math.exp(-Math.pow((t - 0.8) / 0.05, 2));
+        m.hist.unshift({ x: head.x, y: head.y, t: now, e: env }); while (m.hist.length && now - m.hist[m.hist.length - 1].t > 420) m.hist.pop();
+        if (!m.burst && t > 0.82) {
+          m.burst = true;
+          for (let i = 0; i < 4; i++) { const sp = 30 + Math.random() * 40, a = Math.atan2(m.dy, m.dx) + (Math.random() - 0.5) * 1.1;
+            embers.push({ x: head.x, y: head.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: now, life: 700 + Math.random() * 600, s0: scrollY, col: m.col }); }
+        }
+        // Tail: tapered segments behind the head, each fading with its age.
+        const c = m.col.join(",");
+        sg.lineCap = "round";
+        for (let i = 1; i < m.hist.length; i++) {
+          const p = m.hist[i - 1], q = m.hist[i], k = 1 - (now - q.t) / 420;
+          if (k <= 0) break;
+          sg.strokeStyle = `rgba(${c},${(0.75 * k * k * q.e).toFixed(3)})`; sg.lineWidth = 0.4 + 1.5 * k;
+          sg.beginPath(); sg.moveTo(p.x, p.y); sg.lineTo(q.x, q.y); sg.stroke();
+        }
+        const g = sg.createRadialGradient(head.x, head.y, 0, head.x, head.y, 7);
+        g.addColorStop(0, `rgba(${c},${(0.45 * env).toFixed(3)})`); g.addColorStop(1, `rgba(${c},0)`);
+        sg.fillStyle = g; sg.beginPath(); sg.arc(head.x, head.y, 7, 0, Math.PI * 2); sg.fill();
+        sg.fillStyle = `rgba(${c},${Math.min(1, env).toFixed(3)})`; sg.beginPath(); sg.arc(head.x, head.y, 1.5, 0, Math.PI * 2); sg.fill();
+      }
+    }
+    embers = embers.filter(e => {
+      const age = now - e.t; if (age > e.life) return false;
+      e.vx *= Math.exp(-dt * 2.2); e.vy = e.vy * Math.exp(-dt * 2.2) + 26 * dt; e.x += e.vx * dt; e.y += e.vy * dt;
+      const k = 1 - age / e.life, y = e.y - (scrollY - e.s0) * DEPTH;
+      sg.fillStyle = `rgba(${e.col.join(",")},${(0.7 * k * k).toFixed(3)})`; sg.beginPath(); sg.arc(e.x, y, 0.5 + 0.6 * k, 0, Math.PI * 2); sg.fill();
+      return true;
+    });
+    // The ink rises under the meteor and sinks back behind it, like the moon's tide but quicker.
+    if (head && now - mtrailT > 90) { mtrail.unshift({ x: head.x, y: head.y, t: now, s0: scrollY, e: env }); mtrail.length = Math.min(mtrail.length, 3); mtrailT = now; }
+    if (head) { touchBuf[56] = head.x; touchBuf[57] = head.y; touchBuf[58] = 0.7 * Math.min(env, 1); touchBuf[59] = 13; }
+    for (let i = 0; i < mtrail.length; i++) {
+      const p = mtrail[i], age = (now - p.t) / 1000, s = 0.4 * p.e * Math.min(age / 0.2, 1) * Math.exp(-age / 0.9);
+      if (s < 0.004) { mtrail.length = i; break; }
+      touchBuf[60 + i * 4] = p.x; touchBuf[61 + i * 4] = p.y - (scrollY - p.s0) * DEPTH; touchBuf[62 + i * 4] = s; touchBuf[63 + i * 4] = 18;
+    }
+  }
+  // Review builds only (not the live domain): press M to call a meteor on demand.
+  if (!/(^|\.)dominiknagy\.dev$/.test(location.hostname)) addEventListener("keydown", e => { if ((e.key === "m" || e.key === "M") && !e.metaKey && !e.ctrlKey && !paused && !reduce && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { meteor = null; spawnMeteor(performance.now()); } });
   // Parallax: cursor offset from the viewport centre, eased with a soft follow; scroll lag for the portrait.
   const plx = { x: 0, y: 0, sy: 0, set: "", settle: 0, settleV: 0, lastY: scrollY };
   // When scrolling stops, the portrait plane settles a few pixels on the spring with a small overshoot.
@@ -666,7 +760,7 @@ void main(){
     vt.ready.then(() => root.animate({ clipPath: [`circle(0px at ${cx}px ${cy}px)`, `circle(${rad}px at ${cx}px ${cy}px)`] }, { duration: 760, easing: "cubic-bezier(.65, 0, .35, 1)", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
     vt.finished.finally(() => root.classList.remove("eclipsing"));
   });
-  pauseBtn.addEventListener("click", () => { paused = !paused; sync(); });
+  pauseBtn.addEventListener("click", () => { paused = !paused; clearMeteors(); sync(); });
 
   primeOrbit();
   apply();
