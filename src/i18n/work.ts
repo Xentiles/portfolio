@@ -25,7 +25,7 @@ export type CaseStudy = {
 const en: CaseStudy[] = [
   {
     key: "inspection",
-    kind: "Now building · TakScan · Confidential pilot",
+    kind: "Now at TakScan, confidential pilot",
     title: "AI-assisted building inspection",
     lead: "TakScan documents buildings with drones, detects damage and points out deviations with position, size and priority, so owners can act early and prevent bigger problems. I'm building the AI system that supports experts inspecting that aerial imagery. The AI assists and the expert decides.",
     notice: "This is a confidential pilot. What follows is how I work on it, not what is built. Further detail can be discussed in person where confidentiality allows.",
@@ -69,7 +69,7 @@ const en: CaseStudy[] = [
   },
   {
     key: "feedback",
-    kind: "Featured · v0.2.0",
+    kind: "Local web app, v0.2.0",
     title: "Feedback Intelligence",
     lead: "Customer feedback piles up in reviews and comments faster than a team can read it, and an AI summary is hard to trust when you can't see why it says what it says. Feedback Intelligence classifies feedback and keeps every decision traceable to its evidence.",
     sections: [
@@ -90,7 +90,7 @@ const en: CaseStudy[] = [
   },
   {
     key: "notchq",
-    kind: "Native macOS · Beta",
+    kind: "Native macOS app, beta",
     title: "NotchQ",
     lead: "When you work with AI coding tools, running out of allowance in the middle of a task breaks your flow, and checking how much is left means leaving what you're doing. NotchQ keeps it in view.",
     sections: [
@@ -116,7 +116,7 @@ const en: CaseStudy[] = [
 const sv: CaseStudy[] = [
   {
     key: "inspection",
-    kind: "Bygger just nu · TakScan · Konfidentiellt pilotprojekt",
+    kind: "Just nu på TakScan, konfidentiellt pilotprojekt",
     title: "AI-stödd byggnadsinspektion",
     lead: "TakScan dokumenterar byggnader med drönare, upptäcker skador och pekar ut avvikelser med position, mått och prioritet, så att fastighetsägare kan agera i tid och förebygga större problem. Jag bygger AI-systemet som stöttar experter när de granskar flygbilderna. AI:n hjälper till och experten bestämmer.",
     notice: "Det här är ett konfidentiellt pilotprojekt. Det som följer beskriver hur jag arbetar, inte vad som byggs. Mer kan berättas personligen där sekretessen tillåter.",
@@ -160,7 +160,7 @@ const sv: CaseStudy[] = [
   },
   {
     key: "feedback",
-    kind: "Utvalt · v0.2.0",
+    kind: "Lokal webbapp, v0.2.0",
     title: "Feedback Intelligence",
     lead: "Kundfeedback samlas i recensioner och kommentarer snabbare än ett team hinner läsa, och en AI-sammanfattning är svår att lita på när man inte ser varför den säger det den säger. Feedback Intelligence klassificerar feedback och gör varje beslut spårbart till sitt underlag.",
     sections: [
@@ -181,7 +181,7 @@ const sv: CaseStudy[] = [
   },
   {
     key: "notchq",
-    kind: "Inbyggd macOS-app · Beta",
+    kind: "Inbyggd macOS-app, beta",
     title: "NotchQ",
     lead: "När du arbetar med AI-kodverktyg bryts flödet om användningen tar slut mitt i en uppgift, och att kolla hur mycket som finns kvar betyder att du måste lämna det du gör. NotchQ håller det i synfältet.",
     sections: [
@@ -207,7 +207,7 @@ const sv: CaseStudy[] = [
 const hu: CaseStudy[] = [
   {
     key: "inspection",
-    kind: "Most épül · TakScan · Bizalmas pilotprojekt",
+    kind: "Most a TakScannél, bizalmas pilotprojekt",
     title: "MI-támogatott épületvizsgálat",
     lead: "A TakScan drónokkal dokumentálja az épületeket, felismeri a károkat, és helyzettel, mérettel és prioritással jelöli az eltéréseket, hogy a tulajdonosok időben léphessenek, és megelőzzék a nagyobb bajt. Én azt az MI-rendszert építem, amely a légi felvételeket vizsgáló szakértőket támogatja. Az MI segít, a szakértő dönt.",
     notice: "Ez egy bizalmas pilotprojekt. Az alábbiak azt írják le, hogyan dolgozom rajta, nem azt, hogy mi épül. Személyesen, amennyire a titoktartás engedi, többet is elmondok.",
@@ -251,7 +251,7 @@ const hu: CaseStudy[] = [
   },
   {
     key: "feedback",
-    kind: "Kiemelt · v0.2.0",
+    kind: "Helyi webalkalmazás, v0.2.0",
     title: "Feedback Intelligence",
     lead: "Az ügyfélvisszajelzések gyorsabban gyűlnek az értékelésekben és hozzászólásokban, mint ahogy egy csapat el tudja olvasni őket, egy MI-összefoglalóban pedig nehéz megbízni, ha nem látod, miért mondja, amit mond. A Feedback Intelligence osztályozza a visszajelzéseket, és minden döntést visszavezethetővé tesz a bizonyítékáig.",
     sections: [
@@ -272,7 +272,7 @@ const hu: CaseStudy[] = [
   },
   {
     key: "notchq",
-    kind: "Natív macOS · Béta",
+    kind: "Natív macOS-alkalmazás, béta",
     title: "NotchQ",
     lead: "Ha MI-alapú kódolóeszközökkel dolgozol, és egy feladat közepén elfogy a keret, az megtöri a lendületet, és ha meg akarod nézni, mennyi maradt, ki kell lépned abból, amit csinálsz. A NotchQ szem előtt tartja.",
     sections: [

@@ -6,38 +6,46 @@ const { lang } = Astro.props;
 const h = home[lang];
 const t = strings[lang];
 const slugs = workSlugs[lang];
+// The principles read as one plain sentence ("a, b and c"), not a row of tags.
+const principles = new Intl.ListFormat(lang, { type: "conjunction" }).format(
+  h.work.now.principles.map((p, i) => (i === 0 ? p : p.toLocaleLowerCase(lang)))
+).replace(/^./, (c) => c.toLocaleLowerCase(lang));
 ---
 <section class="sec" id="work" aria-labelledby="work-h">
   <header class="sec-head">
-    <p class="eyebrow" data-ink>{h.work.eyebrow}</p>
     <h2 id="work-h" data-ink>{h.work.title}</h2>
     <p class="lead" data-ink>{h.work.lead}</p>
   </header>
-  <a class="card now-card tex" href={slugs.inspection} data-ink>
-    <span class="kind">{h.work.now.kind}</span>
-    <h3 style="view-transition-name: wt-inspection">{h.work.now.title}</h3>
-    <p>{h.work.now.text}</p>
-    <ul class="principles" aria-label="Principles">
-      {h.work.now.principles.map((p) => <li>{p}</li>)}
-    </ul>
-    <span class="more">{h.work.now.cta}</span>
-  </a>
-  <div class="cards">
-    {h.work.cards.map((c) => (
-      <a class="card tex" href={slugs[c.key as "feedback" | "notchq"]} data-ink>
-        <span class="kind">{c.kind}</span>
-        <h3 style={`view-transition-name: wt-${c.key}`}>{c.title}</h3>
-        <p>{c.text}</p>
-        <p class="proof">{c.proof}</p>
-        <span class="more">{c.cta}</span>
+  <ol class="rows work-list">
+    <li class="row work-item is-now" data-ink>
+      <a href={slugs.inspection}>
+        <span class="row-meta">{h.work.now.kind}</span>
+        <span class="row-body">
+          <h3 style="view-transition-name: wt-inspection">{h.work.now.title}</h3>
+          <span class="row-text">{h.work.now.text}</span>
+          <span class="row-note">{h.work.now.principlesLead} {principles}.</span>
+          <span class="more">{h.work.now.cta}</span>
+        </span>
       </a>
+    </li>
+    {h.work.cards.map((c) => (
+      <li class="row work-item" data-ink>
+        <a href={slugs[c.key as "feedback" | "notchq"]}>
+          <span class="row-meta">{c.kind}</span>
+          <span class="row-body">
+            <h3 style={`view-transition-name: wt-${c.key}`}>{c.title}</h3>
+            <span class="row-text">{c.text}</span>
+            <span class="row-note">{c.proof}</span>
+            <span class="more">{c.cta}</span>
+          </span>
+        </a>
+      </li>
     ))}
-  </div>
+  </ol>
 </section>
 
 <section class="sec" id="method" aria-labelledby="method-h">
   <header class="sec-head">
-    <p class="eyebrow" data-ink>{h.method.eyebrow}</p>
     <h2 id="method-h" data-ink>{h.method.title}</h2>
     <p class="lead" data-ink>{h.method.lead}</p>
   </header>
@@ -52,9 +60,8 @@ const slugs = workSlugs[lang];
 </section>
 
 <section class="sec" id="research" aria-labelledby="research-h">
-  <div class="research tex">
+  <div class="research">
     <div class="research-text">
-      <p class="eyebrow" data-ink>{h.research.eyebrow}</p>
       <h2 id="research-h" data-ink>{h.research.title}</h2>
       <p data-ink>{h.research.text}</p>
       <p class="tools" data-ink>{h.research.tools}</p>
@@ -69,7 +76,6 @@ const slugs = workSlugs[lang];
 
 <section class="sec" id="path" aria-labelledby="path-h">
   <header class="sec-head">
-    <p class="eyebrow" data-ink>{h.path.eyebrow}</p>
     <h2 id="path-h" data-ink>{h.path.title}</h2>
     <p class="lead" data-ink>{h.path.lead}</p>
   </header>
@@ -85,16 +91,19 @@ const slugs = workSlugs[lang];
 
 <section class="sec" id="workshop" aria-labelledby="workshop-h">
   <header class="sec-head">
-    <p class="eyebrow" data-ink>{h.workshop.eyebrow}</p>
     <h2 id="workshop-h" data-ink>{h.workshop.title}</h2>
   </header>
-  <ul class="tiles">
-    {h.workshop.items.map(([name, line]) => (<li class="tile tex" data-ink><strong>{name}</strong><span>{line}</span></li>))}
+  <ul class="rows plain-list">
+    {h.workshop.items.map(([name, href, line]) => (
+      <li class="row" data-ink>
+        <span class="row-meta">{href ? <a href={href} target="_blank" rel="noopener">{name} <span aria-hidden="true">↗</span></a> : name}</span>
+        <span class="row-text">{line}</span>
+      </li>
+    ))}
   </ul>
 </section>
 
 <section class="sec talk" id="contact" aria-labelledby="talk-h">
-  <p class="eyebrow" data-ink>{h.talk.eyebrow}</p>
   <h2 id="talk-h" data-ink>{h.talk.title}</h2>
   <p class="lead" data-ink>{h.talk.text}</p>
   <nav class="hub hub-3" aria-label={t.hubLabel}>

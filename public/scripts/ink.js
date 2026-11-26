@@ -473,7 +473,7 @@ void main(){
     if (e && touch && innerWidth === lastW) return;
     lastW = innerWidth;
     if (glOK) {
-      const d = Math.min(devicePixelRatio || 1, 1.5);
+      const d = Math.min(devicePixelRatio || 1, 2);  // full Retina sharpness so the portrait reads crisp
       canvas.width = Math.round(innerWidth * d); canvas.height = Math.round(innerHeight * d);
       gl.viewport(0, 0, canvas.width, canvas.height);
       draw();
@@ -576,11 +576,11 @@ void main(){
       if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
       ptr.tx = e.clientX; ptr.ty = e.clientY; ptr.inside = true;
       // Cards and link buttons tilt toward the cursor and carry a light where it sits.
-      const t = e.target.closest && e.target.closest(".hub > a, .hub > button, .card");
+      const t = e.target.closest && e.target.closest(".hub > a, .hub > button");
       if (t !== tiltEl) { clearTilt(); tiltEl = t; if (t) t.classList.add("hovering", "tracking"); }
       if (t) {
         const r = t.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
-        const amt = t.classList.contains("card") ? 3 : 7;
+        const amt = 7;
         t.style.setProperty("--ry", ((px - 0.5) * amt).toFixed(2) + "deg");
         t.style.setProperty("--rx", (-(py - 0.5) * amt).toFixed(2) + "deg");
         t.style.setProperty("--mx", (e.clientX - r.left) + "px"); t.style.setProperty("--my", (e.clientY - r.top) + "px");

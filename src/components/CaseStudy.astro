@@ -9,7 +9,7 @@ const ui = workUi[lang];
 <article class="case">
   <a class="back" href={back} data-ink>← {ui.back}</a>
   <header class="case-head">
-    <p class="eyebrow" data-ink>{ui.label} · {study.kind}</p>
+    <p class="case-meta" data-ink>{study.kind}</p>
     <h1 style={`view-transition-name: wt-${study.key}`} data-ink>{study.title}</h1>
     <p class="case-lead" data-ink>{study.lead}</p>
     {study.notice && <p class="notice tex" data-ink>{study.notice}</p>}
