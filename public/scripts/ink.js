@@ -225,18 +225,20 @@
       ring.push({ x: ORB.cx + x * c - y * sn, y: ORB.cy + x * sn + y * c, z: Math.sin(E) });
     }
     const n = trail.length, BANDS = 40, p = trail[n - 1];
-    // Stroke the runs of pts[s0..s1] that lie on one side of the head.
+    // Stroke the runs of pts[s0..s1] that lie on one side of the head. Each segment (q-1, q) belongs to the side
+    // of its end point q, so the segment where the ring crosses from one side to the other is drawn once, not twice
+    // (twice made a brighter spot on the translucent ring where it passes the sides of the head).
     function runs(pts, s0, s1, front) {
       og.beginPath(); let on = false;
       for (let q = s0; q <= s1; q++) {
         const f = pts[q].z >= 0;
         if (f === front) { if (!on) { const a = q > s0 ? pts[q - 1] : pts[q]; og.moveTo(a.x, a.y); on = true; } og.lineTo(pts[q].x, pts[q].y); }
-        else if (on) { og.lineTo(pts[q].x, pts[q].y); on = false; }
+        else on = false;
       }
       og.stroke();
     }
     function layer(front) {
-      og.globalAlpha = 1; og.lineCap = "round"; og.strokeStyle = ink; og.lineWidth = 1;
+      og.globalAlpha = 1; og.lineCap = "butt"; og.strokeStyle = ink; og.lineWidth = 1; // the ring is closed: its only ends are where the two sides meet, and flat ends there don't overlap
       runs(ring, 0, ring.length - 1, front);
       if (!front) { og.beginPath(); og.arc(ORB.cx, ORB.cy, 3, 0, Math.PI * 2); og.stroke(); } // the focus sits inside the head
       // Trail: tapers and fades, drawn in bands so overlapping segments never stack up their opacity.
