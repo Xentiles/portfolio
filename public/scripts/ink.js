@@ -18,7 +18,9 @@
   // On touch screens the page scrolls on its own thread, so anything the field paints a frame later
   // than the scroll (the portrait, the scroll parallax) visibly jitters. There the portrait is a plain
   // masked image that scrolls with the page, and scroll parallax is off.
-  const touch = !matchMedia("(hover: hover) and (pointer: fine)").matches;
+  // A first guess from the media query. Some Windows laptops with a touchscreen report no hover even with
+  // a mouse plugged in, so the first real mouse movement corrects it (see adoptMouse below).
+  let touch = !matchMedia("(hover: hover) and (pointer: fine)").matches;
   if (touch) root.classList.add("touch");
   // Pages without the hero (case studies) get an invisible stand-in, so the field, orbit and portrait
   // code runs unchanged and simply draws nothing visible.
@@ -544,7 +546,8 @@ void main(){
   }
 
   /* ---------- Cursor: electrode for the ink field, light and lean for the UI ---------- */
-  const finePointer = matchMedia("(hover: hover) and (pointer: fine)").matches && !reduce;
+  // Checked live, so the cursor comes alive once a mouse shows up or the reduced-motion setting settles.
+  const finePointer = () => !touch && !reduce;
   const touchBuf = new Float32Array(72);
   // Reach of each kind of point, in CSS px. Study 04 halved them; Dominik then asked for the cursor +25%
   // and the moon +50%. The tide is wider and softer than the moon itself.
@@ -560,7 +563,7 @@ void main(){
     if (dotPt.on > 0 && !paused && now - tideT > 220) { tide.unshift({ x: dotPt.x, y: dotPt.y, t: now }); tide.length = Math.min(tide.length, 4); tideT = now; }
     tide.forEach((p, i) => { const age = (now - p.t) / 1000, s = 0.34 * dotPt.on * Math.min(age / 0.35, 1) * Math.exp(-age / 1.5);
       touchBuf[40 + i * 4] = p.x; touchBuf[41 + i * 4] = p.y; touchBuf[42 + i * 4] = s; touchBuf[43 + i * 4] = REACH.tide; });
-    if (!finePointer) return;
+    if (!finePointer()) return;
     // Spring-follow the real cursor so the ink lags a little behind it, with weight.
     const k = 120, d = 18;
     if (ptr.x < -9000) { ptr.x = ptr.tx; ptr.y = ptr.ty; }
@@ -688,7 +691,7 @@ void main(){
   function stepParallax(dt) {
     if (reduce) return;
     let tx = 0, ty = 0;
-    if (finePointer && ptr.inside && ptr.tx > -9000) { tx = (ptr.tx / innerWidth - 0.5) * 2; ty = (ptr.ty / innerHeight - 0.5) * 2; }
+    if (finePointer() && ptr.inside && ptr.tx > -9000) { tx = (ptr.tx / innerWidth - 0.5) * 2; ty = (ptr.ty / innerHeight - 0.5) * 2; }
     const f = Math.min(dt * 3, 1);
     plx.x += (tx - plx.x) * f; plx.y += (ty - plx.y) * f;
     for (let left = dt; left > 0; left -= 1 / 240) { const h = Math.min(left, 1 / 240); plx.settleV += (-170 * plx.settle - 15 * plx.settleV) * h; plx.settle += plx.settleV * h; }
@@ -701,11 +704,19 @@ void main(){
   let tiltEl = null, magnetEl = null;
   function clearTilt() { if (!tiltEl) return; tiltEl.classList.remove("hovering", "tracking"); tiltEl.style.removeProperty("--rx"); tiltEl.style.removeProperty("--ry"); tiltEl = null; }
   function clearMagnet() { if (!magnetEl) return; magnetEl.classList.remove("tracking"); magnetEl.style.setProperty("--tx", "0px"); magnetEl.style.setProperty("--ty", "0px"); magnetEl = null; }
-  if (finePointer) {
-    document.querySelectorAll(".chip, .tab, .hub > a, .hub > button").forEach(el => el.classList.add("magnet"));
+  let magnets = false;
+  function addMagnets() { if (magnets) return; magnets = true; document.querySelectorAll(".chip, .tab, .hub > a, .hub > button").forEach(el => el.classList.add("magnet")); }
+  // A real mouse moved on a device the media query called touch-only: switch to the desktop behaviour
+  // (portrait in the field, orbit dot, cursor electrode) instead of ignoring the mouse for the whole visit.
+  function adoptMouse() { touch = false; root.classList.remove("touch"); }
+  if (finePointer()) addMagnets();
+  {
     addEventListener("pointermove", e => {
       if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
+      if (touch && e.pointerType === "mouse") adoptMouse();
       ptr.tx = e.clientX; ptr.ty = e.clientY; ptr.inside = true;
+      if (reduce) return;
+      addMagnets();
       // Cards and link buttons tilt toward the cursor and carry a light where it sits.
       const t = null; // Tiles no longer tilt toward the cursor: their hover is the ink ripple alone.
       if (t !== tiltEl) { clearTilt(); tiltEl = t; if (t) t.classList.add("hovering", "tracking"); }
