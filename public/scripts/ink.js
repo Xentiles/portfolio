@@ -1,7 +1,7 @@
 /* Orbital Clarity ink field, orbit and portrait. Ported from e-ink study 03. */
 (() => {
   const root = document.documentElement;
-  const L = Object.assign({ copied: "Copied: ", toCharcoal: "Switch to Charcoal theme", toPaper: "Switch to Paper theme", charcoal: "Charcoal", paper: "Paper", pause: "Pause motion", resume: "Resume motion" }, window.__ink_i18n || {});
+  const L = Object.assign({ copied: "Copied: ", toCharcoal: "Switch to the Carbon theme", toPaper: "Switch to the Magnesium theme", charcoal: "Carbon", paper: "Magnesium", pause: "Pause motion", resume: "Resume motion" }, window.__ink_i18n || {});
   // Any script error is written into the footer, so a broken view can be diagnosed from a screenshot.
   function reportError(e) {
     const msg = (e && (e.message || e.reason && e.reason.message)) || String(e);
@@ -317,7 +317,7 @@ precision highp float; precision highp int;
 out vec4 color;
 uniform vec2 resolution; uniform vec2 cssSize; uniform float time; uniform float intensity;
 uniform int mode; uniform float cell; uniform vec3 base; uniform vec3 capsule; uniform vec3 ink; uniform vec3 wall;
-uniform vec4 touch[10];                        // x, y in CSS px, strength, reach: cursor, wake, resting memory, orbit dot
+uniform vec4 touch[14];                        // x, y in CSS px, strength, reach: cursor, wake, resting memory, moon and its tide
 uniform sampler2D photo; uniform vec4 pRect; uniform float pReveal; uniform vec3 tone0; uniform vec3 tone1;
 float hash(vec2 p){ p=mod(p,289.); return fract((p.x*34.+1.)*p.x/289.+(p.y*71.+1.)*p.y/293.); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
@@ -366,10 +366,10 @@ void main(){
   float n=smoothstep(-9.,13.,intensity*d0);
   // The cursor behaves like an electrode: nearby capsules draw ink up and pool it toward the cursor.
   vec2 pull=vec2(0.); float lift=0.;
-  for(int i=0;i<10;i++){
+  for(int i=0;i<14;i++){
     vec4 tp=touch[i]; if(tp.z<.002) continue;
     vec2 dv=tp.xy-center; float d2=dot(dv,dv);
-    float w=tp.z*exp(-d2/(2.*tp.w*tp.w));   // each point carries its own reach (cursor 20 px since study 04)
+    float w=tp.z*exp(-d2/(2.*tp.w*tp.w));   // each point carries its own reach (cursor 25 px, moon 17 px)
     lift+=w; pull+=dv/(sqrt(d2)+1.)*w;
   }
   n=clamp(n+lift*.45,0.,1.);
@@ -541,15 +541,21 @@ void main(){
 
   /* ---------- Cursor: electrode for the ink field, light and lean for the UI ---------- */
   const finePointer = matchMedia("(hover: hover) and (pointer: fine)").matches && !reduce;
-  const touchBuf = new Float32Array(40);
-  // Reach of each kind of point, in CSS px. Halved again after study 04: a small, quiet electrode.
-  const REACH = { cursor: 20, wake: 20, memory: 22, dot: 11 };
+  const touchBuf = new Float32Array(56);
+  // Reach of each kind of point, in CSS px. Study 04 halved them; Dominik then asked for the cursor +25%
+  // and the moon +50%. The tide is wider and softer than the moon itself.
+  const REACH = { cursor: 25, wake: 25, memory: 27, dot: 17, tide: 24 };
+  const tide = []; let tideT = 0;
   const ptr = { tx: -9999, ty: -9999, x: -9999, y: -9999, vx: 0, vy: 0, presence: 0, inside: false, wake: [], lastSample: 0, rest: null, restT: 0 };
   const dotPt = { x: -9999, y: -9999, on: 0 };
   function stepPointer(dt, now) {
     touchBuf.fill(0);
     // The orbit dot is a second, weaker hand in the field: capsules deepen in its wake and settle back.
-    if (dotPt.on > 0) { touchBuf[36] = dotPt.x; touchBuf[37] = dotPt.y; touchBuf[38] = 0.45 * dotPt.on; touchBuf[39] = REACH.dot; }
+    if (dotPt.on > 0) { touchBuf[36] = dotPt.x; touchBuf[37] = dotPt.y; touchBuf[38] = 0.5 * dotPt.on; touchBuf[39] = REACH.dot; }
+    // The tide: behind the moon the ink stays lifted and sinks back slowly, like water after the moon has passed.
+    if (dotPt.on > 0 && !paused && now - tideT > 220) { tide.unshift({ x: dotPt.x, y: dotPt.y, t: now }); tide.length = Math.min(tide.length, 4); tideT = now; }
+    tide.forEach((p, i) => { const age = (now - p.t) / 1000, s = 0.34 * dotPt.on * Math.min(age / 0.35, 1) * Math.exp(-age / 1.5);
+      touchBuf[40 + i * 4] = p.x; touchBuf[41 + i * 4] = p.y; touchBuf[42 + i * 4] = s; touchBuf[43 + i * 4] = REACH.tide; });
     if (!finePointer) return;
     // Spring-follow the real cursor so the ink lags a little behind it, with weight.
     const k = 120, d = 18;
@@ -604,7 +610,7 @@ void main(){
       if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
       ptr.tx = e.clientX; ptr.ty = e.clientY; ptr.inside = true;
       // Cards and link buttons tilt toward the cursor and carry a light where it sits.
-      const t = e.target.closest && e.target.closest(".hub > a, .hub > button");
+      const t = null; // Tiles no longer tilt toward the cursor: their hover is the ink ripple alone.
       if (t !== tiltEl) { clearTilt(); tiltEl = t; if (t) t.classList.add("hovering", "tracking"); }
       if (t) {
         const r = t.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
@@ -619,7 +625,7 @@ void main(){
       if (m) {
         const r = m.getBoundingClientRect();
         const dx = (e.clientX - (r.left + r.width / 2)) / r.width, dy = (e.clientY - (r.top + r.height / 2)) / r.height;
-        m.style.setProperty("--tx", (dx * 6).toFixed(1) + "px"); m.style.setProperty("--ty", (dy * 4).toFixed(1) + "px");
+        m.style.setProperty("--tx", (dx * 3).toFixed(1) + "px"); m.style.setProperty("--ty", (dy * 2).toFixed(1) + "px");
       }
     }, { passive: true });
     document.documentElement.addEventListener("pointerleave", () => { ptr.inside = false; clearTilt(); clearMagnet(); });

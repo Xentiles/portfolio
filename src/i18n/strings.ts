@@ -21,7 +21,7 @@ export const strings = {
     built: "Built with Orbital Clarity",
     typeCredit: "Type: Libron by Nico Verbruggen",
     langLabel: "Language",
-    js: { copied: "Copied: ", toCharcoal: "Switch to Charcoal theme", toPaper: "Switch to Paper theme", charcoal: "Charcoal", paper: "Paper", pause: "Pause motion", resume: "Resume motion" },
+    js: { copied: "Copied: ", toCharcoal: "Switch to the Carbon theme", toPaper: "Switch to the Magnesium theme", charcoal: "Carbon", paper: "Magnesium", pause: "Pause motion", resume: "Resume motion" },
   },
   sv: {
     name: "Dominik Nagy",
@@ -38,7 +38,7 @@ export const strings = {
     built: "Byggd med Orbital Clarity",
     typeCredit: "Typsnitt: Libron av Nico Verbruggen",
     langLabel: "Språk",
-    js: { copied: "Kopierad: ", toCharcoal: "Byt till temat Kol", toPaper: "Byt till temat Papper", charcoal: "Kol", paper: "Papper", pause: "Pausa rörelse", resume: "Återuppta rörelse" },
+    js: { copied: "Kopierad: ", toCharcoal: "Byt till temat Kol", toPaper: "Byt till temat Magnesium", charcoal: "Kol", paper: "Magnesium", pause: "Pausa rörelse", resume: "Återuppta rörelse" },
   },
   hu: {
     name: "Nagy Dominik",
@@ -55,6 +55,6 @@ export const strings = {
     built: "Orbital Clarity stílusban készült",
     typeCredit: "Betűtípus: Libron, Nico Verbruggen",
     langLabel: "Nyelv",
-    js: { copied: "Kimásolva: ", toCharcoal: "Váltás Szén témára", toPaper: "Váltás Papír témára", charcoal: "Szén", paper: "Papír", pause: "Mozgás szüneteltetése", resume: "Mozgás folytatása" },
+    js: { copied: "Kimásolva: ", toCharcoal: "Váltás Szén témára", toPaper: "Váltás Magnézium témára", charcoal: "Szén", paper: "Magnézium", pause: "Mozgás szüneteltetése", resume: "Mozgás folytatása" },
   },
 } as const;

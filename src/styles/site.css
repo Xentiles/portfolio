@@ -35,6 +35,8 @@
   --font-ui: "Inter", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --spring: cubic-bezier(.2, 1.3, .4, 1);
+  /* Settle: a calm ease-out with no overshoot, for hover states that should feel like the ink. */
+  --settle: cubic-bezier(.22, .61, .36, 1);
 }
 :root[data-mode="paper"] {
   color-scheme: light;
@@ -80,7 +82,9 @@ body {
 .bar { position: sticky; top: 0; z-index: 20; padding-block: 12px; margin-block: -12px; isolation: isolate; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 /* The control bar stays on screen. A frosted band of page colour sits behind it, fading out at
    its lower edge, so content and ink slide softly underneath instead of colliding with the chips. */
-.bar::before { content: ""; position: absolute; z-index: -1; top: 0; bottom: -16px; left: 50%; width: 100vw; transform: translateX(-50%); pointer-events: none;
+/* The band reaches well above the bar, so a rubber-band bounce at the top of the page (Safari, trackpads)
+   never shows a hard edge with bare background above it while the band fades out. */
+.bar::before { content: ""; position: absolute; z-index: -1; top: -160px; bottom: -16px; left: 50%; width: 100vw; transform: translateX(-50%); pointer-events: none;
   background: color-mix(in srgb, var(--page) 86%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   -webkit-mask-image: linear-gradient(#000 calc(100% - 24px), transparent); mask-image: linear-gradient(#000 calc(100% - 24px), transparent);
   opacity: 0; transition: opacity 400ms ease; }
@@ -91,7 +95,7 @@ body {
 .index { font: 400 12px/18px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
 .bar-end { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .chip { appearance: none; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 12px; background: var(--surface); color: var(--ink); border: 1px solid var(--ink-soft); border-radius: 999px; font: 500 12px/18px var(--font-ui); cursor: pointer; transition: border-color 200ms ease, transform 420ms var(--spring); }
-.chip:hover { border-color: var(--ink); transform: translateY(-1px); }
+.chip:hover { border-color: color-mix(in srgb, var(--ink) 45%, transparent); }
 .chip .disc { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ink); background: linear-gradient(90deg, var(--ink) 50%, transparent 50%); transition: transform 700ms var(--spring); }
 :root[data-mode="paper"] .chip .disc { transform: rotate(180deg); }
 .marker { width: 2px; height: 14px; background: var(--accent); border-radius: 1px; }
@@ -129,26 +133,31 @@ body {
   background: var(--surface); color: var(--ink);
   border: 1px solid var(--ink-soft); border-radius: 6px;
   text-decoration: none; text-align: left; font: inherit; cursor: pointer;
-  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px));
-  transition: transform 700ms var(--spring), border-color 300ms ease, background-color 160ms ease, color 160ms ease;
+  transform: translateY(var(--lift, 0px));
+  transition: transform 900ms var(--settle), border-color 700ms ease;
 }
-.hub a:hover, .hub button:hover { --lift: -3px; border-color: var(--ink); }
-.tracking { transition: transform 240ms cubic-bezier(.2, .8, .2, 1), border-color 300ms ease, background-color 160ms ease, color 160ms ease !important; }
+.hub a:hover, .hub button:hover { --lift: -1px; border-color: color-mix(in srgb, var(--ink) 38%, transparent); }
 .hub .label { font: 700 18px/24px var(--font-display); }
 .hub .meta { font: 400 12px/18px var(--font-mono); letter-spacing: 0.04em; overflow-wrap: anywhere; }
-.hub .arrow { position: absolute; right: 14px; top: 14px; font: 400 14px/1 var(--font-ui); transition: transform 520ms var(--spring); }
+.hub .arrow { position: absolute; right: 14px; top: 14px; font: 400 14px/1 var(--font-ui); transition: transform 900ms var(--settle); }
 .hub a:hover .arrow, .hub button:hover .arrow { transform: translate(3px, -3px); }
-/* Liquid fill: spills in from where the pointer enters, drains toward where it leaves. */
+/* Ink ripple: the tile's capsules take up ink in a soft wave that spreads from where the pointer
+   enters, like the field's slow fluid, and sink back toward where it leaves. No light, no overshoot:
+   it develops in 1.8 s and drains in 1.6 s, so a quick pass of the mouse leaves only a faint swell. */
+@property --wave { syntax: "<length>"; inherits: false; initial-value: 0px; }
 .hub .fill {
-  position: absolute; inset: 0; z-index: -1;
-  /* The liquid carries a sheen that follows the cursor across its surface. */
-  background: radial-gradient(130px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--wood) 72%, var(--ink) 28%), var(--wood) 70%);
-  clip-path: circle(0px at var(--fx, 50%) var(--fy, 50%));
-  transition: clip-path 900ms var(--spring);
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--wood) 80%, var(--ink) 20%) 0 2.1px, transparent 2.6px) 0 0 / 7.5px 15px,
+    radial-gradient(circle, color-mix(in srgb, var(--wood) 80%, var(--ink) 20%) 0 2.1px, transparent 2.6px) 3.75px 7.5px / 7.5px 15px,
+    color-mix(in srgb, var(--surface) 55%, var(--wood) 45%);
+  -webkit-mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 calc(var(--wave) - 90px), rgba(0,0,0,.5) calc(var(--wave) - 48px), rgba(0,0,0,.75) calc(var(--wave) - 22px), transparent var(--wave));
+  mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 calc(var(--wave) - 90px), rgba(0,0,0,.5) calc(var(--wave) - 48px), rgba(0,0,0,.75) calc(var(--wave) - 22px), transparent var(--wave));
+  transition: --wave 1600ms cubic-bezier(.45, 0, .55, 1);
 }
-.hub .on .fill, .hub .on > .fill { clip-path: circle(150% at var(--fx, 50%) var(--fy, 50%)); }
+.hub .on .fill, .hub .on > .fill { --wave: 400px; transition: --wave 1800ms cubic-bezier(.3, .55, .4, 1); }
 /* Pressing has mass: the tile sinks to 98% and springs back, never from or to zero. */
-.hub a:active, .hub button:active { transform: scale(.98); transition: transform 80ms ease-out, border-color 300ms ease !important; }
+.hub a:active, .hub button:active { transform: scale(.98); transition: transform 80ms ease-out, border-color 700ms ease !important; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 /* Story */
@@ -162,7 +171,7 @@ body {
 .panel p { margin: 0; max-width: 62ch; }
 .chip, .tab { transition: transform 600ms var(--spring), border-color 200ms ease; }
 .magnet { transform: translate(var(--tx, 0px), var(--ty, 0px)); }
-.magnet.tracking { transition: transform 200ms cubic-bezier(.2, .8, .2, 1) !important; }
+.magnet.tracking { transition: transform 420ms cubic-bezier(.22, .61, .36, 1) !important; }
 .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: s; }
 .steps li { display: grid; grid-template-columns: 40px 1fr; gap: 12px; counter-increment: s; }
 .steps li::before { content: counter(s, decimal-leading-zero); font: 400 12px/24px var(--font-mono); letter-spacing: 0.08em; color: var(--accent); }

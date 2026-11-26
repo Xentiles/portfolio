@@ -77,7 +77,7 @@ const en: CaseStudy[] = [
         "A local workbench that imports reviews and comments.",
         "Classification with keyword rules or a connected AI model, chosen per run.",
         "Every decision stored with its provenance, so any result can be traced back to the text that caused it.",
-      ] }, { type: "figure", src: "/img/fi/fi-overview.webp", alt: "The Feedback Intelligence overview in the Orbital Clarity Charcoal theme: a decision-source switch between a local open model, a rules baseline and an AI reference, the current dataset and version, and filters.", caption: "The overview. Pick which method's decisions to look at, then filter. Synthetic showcase data." }] },
+      ] }, { type: "figure", src: "/img/fi/fi-overview.webp", alt: "The Feedback Intelligence overview in the Orbital Clarity Carbon theme: a decision-source switch between a local open model, a rules baseline and an AI reference, the current dataset and version, and filters.", caption: "The overview. Pick which method's decisions to look at, then filter. Synthetic showcase data." }] },
       { title: "How it works", blocks: [{ type: "flow", items: ["Import", "Rules or AI", "Decisions with provenance", "Analytics", "Review interface"] }, { type: "figure", src: "/img/fi/fi-signal.webp", alt: "A signal page with the delivery-delay rate over time as an orange line against a dashed average, with latest, average and range above it.", caption: "A signal over time. Every point opens the records behind it." }] },
       { title: "What I decided and why", blocks: [{ type: "list", items: [
         "Durable jobs and an outbox, so a restart never loses work or sends an export twice.",
@@ -168,7 +168,7 @@ const sv: CaseStudy[] = [
         "En lokal arbetsyta som importerar recensioner och kommentarer.",
         "Klassificering med nyckelordsregler eller en ansluten AI-modell, vald per körning.",
         "Varje beslut sparas med sitt ursprung, så att alla resultat kan spåras tillbaka till texten som gav upphov till dem.",
-      ] }, { type: "figure", src: "/img/fi/fi-overview.webp", alt: "Översikten i Feedback Intelligence i Orbital Clarity-temat Charcoal: ett val mellan en lokal öppen modell, en regelbaslinje och en AI-referens, aktuell datamängd och version samt filter.", caption: "Översikten. Välj vilken metods beslut du vill se och filtrera sedan. Syntetisk demodata." }] },
+      ] }, { type: "figure", src: "/img/fi/fi-overview.webp", alt: "Översikten i Feedback Intelligence i Orbital Clarity-temat Kol: ett val mellan en lokal öppen modell, en regelbaslinje och en AI-referens, aktuell datamängd och version samt filter.", caption: "Översikten. Välj vilken metods beslut du vill se och filtrera sedan. Syntetisk demodata." }] },
       { title: "Hur det fungerar", blocks: [{ type: "flow", items: ["Import", "Regler eller AI", "Beslut med ursprung", "Analys", "Granskningsvy"] }, { type: "figure", src: "/img/fi/fi-signal.webp", alt: "En signalsida där andelen leveransförseningar över tid visas som en orange linje mot ett streckat medelvärde, med senaste värde, medelvärde och spann ovanför.", caption: "En signal över tid. Varje punkt öppnar posterna bakom den." }] },
       { title: "Vad jag beslutade och varför", blocks: [{ type: "list", items: [
         "Beständiga jobb och en utkorg, så att en omstart aldrig tappar arbete eller skickar en export två gånger.",
