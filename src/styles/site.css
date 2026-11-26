@@ -306,6 +306,10 @@ html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 .back:hover { opacity: 1; }
 .case-head { display: grid; gap: 16px; }
 .case h1 { margin: 0; font: 700 clamp(36px, 6vw, 60px)/1.08 var(--font-display); letter-spacing: -.01em; text-wrap: balance; }
+/* The ink bloom masks each element to its own box, and these tight line heights let accents and the tails of g, y, j
+   reach past it, so they were cut off until the bloom finished. A little padding, cancelled by an equal negative margin,
+   gives the glyphs room inside the box without moving anything. */
+.hero h1, .case h1 { padding-block: .2em; margin-block: -.2em; }
 .case-lead { margin: 0; font: 400 clamp(18px, 2vw, 21px)/1.6 var(--font-body); }
 .notice { margin: 0; padding: 14px 16px; border: 1px solid var(--ink-soft); border-radius: 8px; background: var(--surface); font: 400 15px/1.55 var(--font-body); }
 .case-media { margin: 0; display: grid; gap: 10px; }
